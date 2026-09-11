@@ -1,9 +1,22 @@
 // отвечает за техническую загрузку .so
-class IAgentLoader {
+class AgentLoader : public IAgentLoader {
 public:
-    virtual ~IAgentLoader() = default;
     //здесь выгружаются созданные агенты .so
-    virtual void load() = 0; //загрузить агента
+    std::vector<AgentHandle> AgentLoader::loadAgents()
+    {
+        std::vector<AgentHandle> result;
+
+        for (const auto& entry :
+            std::filesystem::directory_iterator("./agents")) {
+
+            if (entry.path().extension() != ".so")
+                continue;
+
+            result.push_back(load(entry.path()));
+        }
+
+        return result;
+    }
     virtual void scan() = 0; //выгрузить агента
 
     // Программа-ядро в отдельном потоке должна с заданной
