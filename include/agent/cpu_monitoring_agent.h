@@ -34,14 +34,9 @@ namespace agent {
         void updateMetrics() noexcept override;
 
         /**
-         * @return Значение приватного поля _cpu
+         * @return Значения метрик cpu и processes
          */
-        double cpu() const noexcept;
-
-        /**
-         * @return Значение приватного поля _processes
-         */
-        int processes() const noexcept;
+        std::vector<Metric> getMetrics() noexcept override;
 
     private:
         /**

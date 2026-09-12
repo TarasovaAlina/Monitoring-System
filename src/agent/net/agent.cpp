@@ -3,6 +3,8 @@
 #include <sstream>
 #include <bits/this_thread_sleep.h>
 
+#include "agent_prototypes/MemoryAgent/MemoryMetricCollector.h"
+
 namespace agent {
     std::map<std::string, std::pair<unsigned long, unsigned long>> NetworkAgent::_readNetInterfaces() noexcept {
         std::ifstream file("/proc/net/dev");
@@ -55,12 +57,14 @@ namespace agent {
         _url_availability[url] = false;
     }
 
-    const std::map<std::string, bool> &NetworkAgent::urlAvailability() const noexcept {
-        return _url_availability;
-    }
+    std::vector<Metric> NetworkAgent::getMetrics() noexcept {
+        std::vector<Metric> result {Metric("inet_throughput", _inet_throughput)};
 
-    const std::map<std::string, double> &NetworkAgent::inetThroughput() const noexcept {
-        return _inet_throughput;
+        for (const auto& [url, availability]: _url_availability) {
+            result.push_back(Metric(url, availability == true));
+        }
+
+        return result;
     }
 
 }

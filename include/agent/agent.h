@@ -9,11 +9,23 @@
  * @date 04.09.2026
  */
 
+#include <string>
+#include <vector>
+
 /**
  * @namespace agent
  * @brief В этом пространстве имен описаны классы агентов, которые отслеживают системные метрики
  */
 namespace agent {
+    /**
+     * @struct Metric
+     * @brief Содержит информацию об отдельной метрике, которую собирает агент
+     */
+    struct Metric {
+        std::string name;
+        double value;
+    };
+
     /**
      * @class IAgent
      * @brief Базовый класс, описывающий организацию агентов для сбора метрик
@@ -27,6 +39,13 @@ namespace agent {
          * позволяющий подгружать актуальные значения метрик, собираемые этим агентом-библиотекой
          */
         virtual void updateMetrics() noexcept = 0;
+
+        /**
+         * @brief Каждый класс агента должен иметь метод,
+         * позволяющий выдавать актуальные данные для их отображения в GUI
+         * @return Список метрик, которые собирает агент
+         */
+        virtual std::vector<Metric> getMetrics() noexcept = 0;
     };
 }
 

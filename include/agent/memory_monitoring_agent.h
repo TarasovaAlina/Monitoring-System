@@ -14,22 +14,12 @@
 
 namespace agent {
     /**
-     * @struct DiskInfo
-     * @brief Хранит в себе информацию об использовании отдельного диске
-     */
-    struct DiskInfo {
-        double hard_volume; ///< Использование объема жесткого диска
-        int hard_ops; ///< Количество операций I/O для жесткого диска в секунду
-        double hard_throughput; ///< Пропускная способность HDD
-    };
-
-    /**
      * @class MemoryAgent
      * @brief Собирает информацию об использовании памяти системы (ОЗУ и HDD)
      */
     class MemoryAgent final : public IAgent {
     public:
-        MemoryAgent() noexcept = default;
+        MemoryAgent() noexcept;
 
         /**
          * @brief Обновляет метрики использования памяти системы.\n
@@ -58,20 +48,9 @@ namespace agent {
         void updateMetrics() noexcept override;
 
         /**
-         * @return Значение приватного поля _ram_total
+         * @return Значения метрик ram_total, ram, hard_volume, hard_ops, hard_throughput
          */
-        double ram_total() const noexcept;
-
-        /**
-         * @return Значение приватного поля _ram
-         */
-        double ram() const noexcept;
-
-        /**
-         * @brief Осуществляет доступ к приватному полю _disk_io_stat
-         * @return Метрики использования каждого диска
-         */
-        const std::map<std::string, DiskInfo>& diskIOStats() const noexcept;
+        std::vector<Metric> getMetrics() noexcept override;
 
     private:
         /**
@@ -84,11 +63,13 @@ namespace agent {
          * @brief Парсит из файла /sys/block/<dev>/stat
          * @return Пара значений {sectors_read, sectors_write}
          */
-        static std::pair<unsigned long, unsigned long> _readDiskStat(const std::string& disk_name) noexcept;
+        static std::pair<unsigned long, unsigned long> _readPartitionDiskStat(const std::string& disk_name) noexcept;
 
         double _ram_total; ///< Общий объем ОЗУ
         double _ram; ///< Загрузка ОЗУ (в %)
-        std::map<std::string, DiskInfo> _disk_io_stat; ///< Системные метрики каждого отдельного диска
+        double _hard_volume; ///< Использование объема жесткого диска
+        int _hard_ops; ///< Количество операций I/O для жесткого диска в секунду
+        double _hard_throughput; ///< Пропускная способность HDD
     };
 }
 

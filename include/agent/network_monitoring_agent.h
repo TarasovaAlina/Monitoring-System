@@ -45,16 +45,9 @@ namespace agent {
         void addURL(const std::string& url) noexcept;
 
         /**
-         * @brief Осуществляет доступ к приватному полю _url_availability
-         * @return Доступность каждого сайта, который указал пользователь
+         * @return Значения метрик <url>, inet_throughput
          */
-        const std::map<std::string, bool>& urlAvailability() const noexcept;
-
-        /**
-         * @brief Осуществляет доступ к приватному полю _inet_throughput
-         * @return Пропускная способность каждого сетевого интерфейса, доступного в системе
-         */
-        const std::map<std::string, double>& inetThroughput() const noexcept;
+        std::vector<Metric> getMetrics() noexcept override;
 
     private:
         /**
@@ -64,7 +57,7 @@ namespace agent {
         static std::map<std::string, std::pair<unsigned long, unsigned long>> _readNetInterfaces() noexcept;
 
         std::map<std::string, bool> _url_availability; ///< Доступность url, указанных в конфиге
-        std::map<std::string, double> _inet_throughput; ///< Пропускная способность доступных сетевых интерфейсов
+        double _inet_throughput; ///< Средняя пропускная способность доступных сетевых интерфейсов
     };
 }
 

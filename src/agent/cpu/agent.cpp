@@ -7,12 +7,8 @@
 namespace agent {
     CPUAgent::CPUAgent() noexcept : _cpu(0.0), _processes(0) {}
 
-    double CPUAgent::cpu() const noexcept {
-        return _cpu;
-    }
-
-    int CPUAgent::processes() const noexcept {
-        return _processes;
+    std::vector<Metric> CPUAgent::getMetrics() noexcept {
+        return { Metric("cpu", _cpu), Metric("processes", _processes) };
     }
 
     void CPUAgent::updateMetrics() noexcept {
