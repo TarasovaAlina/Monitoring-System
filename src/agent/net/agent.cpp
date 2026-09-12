@@ -41,15 +41,19 @@ namespace agent {
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
         auto result_after = _readNetInterfaces();
 
+        double throughputs = 0.0;
+        int count = 0;
         for (const auto& [interface, count_bytes]: result_after) {
             if (result_before.contains(interface)) {
                 auto det_receive_bytes = count_bytes.first - result_before[interface].first;
                 auto det_transmit_bytes = count_bytes.second - result_before[interface].first;
 
-                _inet_throughput[interface] = static_cast<double>(det_receive_bytes + det_transmit_bytes) * 0.33;
+                throughputs += static_cast<double>(det_receive_bytes + det_transmit_bytes) * 0.33;
+                count++;
             }
-            else _inet_throughput[interface] = 0.0;
         }
+
+        _inet_throughput = throughputs / count;
     }
 
     void NetworkAgent::addURL(const std::string &url) noexcept {
