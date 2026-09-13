@@ -22,8 +22,14 @@ namespace agent {
      * @brief Содержит информацию об отдельной метрике, которую собирает агент
      */
     struct Metric {
-        std::string name;
-        double value;
+        std::string name; ///< Название метрики
+        double value; ///< Значение метрики
+    };
+
+    enum AgentType {
+        CPU_AGENT, ///< Агент, отслеживающий загрузку CPU
+        MEMORY_AGENT, ///< Агент, отслеживающий использование RAM и HDD
+        NETWORK_AGENT ///< Агент, отслеживающий использование сети
     };
 
     /**
@@ -32,6 +38,7 @@ namespace agent {
      */
     class IAgent {
     public:
+        explicit IAgent(AgentType type) noexcept : _type(type) {}
         virtual ~IAgent() noexcept = default;
 
         /**
@@ -46,6 +53,12 @@ namespace agent {
          * @return Список метрик, которые собирает агент
          */
         virtual std::vector<Metric> getMetrics() noexcept = 0;
+
+        AgentType type() const noexcept {
+            return _type;
+        }
+    protected:
+        AgentType _type; ///< Тип агента
     };
 }
 
