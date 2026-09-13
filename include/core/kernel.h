@@ -1,4 +1,4 @@
-class Kernel {
+class kernel {
     std::unique_ptr<IKernelManager> kernelManager_;
     std::unique_ptr<ILogger> logger_;
     std::unique_ptr<INotificationService> notificationService_;
