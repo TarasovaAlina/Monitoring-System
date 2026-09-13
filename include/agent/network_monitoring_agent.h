@@ -19,7 +19,7 @@ namespace agent {
      */
     class NetworkAgent final : public IAgent {
     public:
-        NetworkAgent() noexcept = default;
+        NetworkAgent() noexcept;
 
         /**
          * @brief Обновляет метрики использования сетевых интерфейсов системы.\n
