@@ -6,7 +6,7 @@
 #include <sys/statvfs.h>
 
 namespace agent {
-    MemoryAgent::MemoryAgent() noexcept : _ram_total(0.0), _ram(0.0), _hard_volume(0.0), _hard_ops(0), _hard_throughput(0.0) {}
+    MemoryAgent::MemoryAgent() noexcept : IAgent(MEMORY_AGENT), _ram_total(0.0), _ram(0.0), _hard_volume(0.0), _hard_ops(0), _hard_throughput(0.0) {}
 
     void MemoryAgent::updateMetrics() noexcept {
         std::pair<unsigned long, unsigned long> ram_metrics = _readRAMStat();

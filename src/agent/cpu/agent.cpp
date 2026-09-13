@@ -5,7 +5,7 @@
 #include <filesystem>
 
 namespace agent {
-    CPUAgent::CPUAgent() noexcept : _cpu(0.0), _processes(0) {}
+    CPUAgent::CPUAgent() noexcept : IAgent(CPU_AGENT), _cpu(0.0), _processes(0) {}
 
     std::vector<Metric> CPUAgent::getMetrics() noexcept {
         return { Metric("cpu", _cpu), Metric("processes", _processes) };

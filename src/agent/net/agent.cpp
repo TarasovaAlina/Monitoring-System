@@ -3,9 +3,10 @@
 #include <sstream>
 #include <bits/this_thread_sleep.h>
 
-#include "agent_prototypes/MemoryAgent/MemoryMetricCollector.h"
-
 namespace agent {
+
+    NetworkAgent::NetworkAgent() noexcept : IAgent(NETWORK_AGENT), _inet_throughput(0.0) {}
+
     std::map<std::string, std::pair<unsigned long, unsigned long>> NetworkAgent::_readNetInterfaces() noexcept {
         std::ifstream file("/proc/net/dev");
         std::map<std::string, std::pair<unsigned long, unsigned long>> result;
