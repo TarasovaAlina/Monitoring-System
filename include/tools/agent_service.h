@@ -1,13 +1,13 @@
 
 
-class AgentService : public IAgentService {
+class KernelManager : public IKernelManager {
     std::unique_ptr<IAgentLoader> agentLoader_;
-    std::unique_ptr<AgentManager> agentManager_;
+    std::unique_ptr<AgentService> AgentService_;
     std::unique_ptr<IAgentConfigService> agentConfigService_;
 public:
     void updateAgents() override;
 
-    //возвращет общий metrics, берет из AgentManager::updateMetrics
+    //возвращет общий metrics, берет из AgentService::updateMetrics
     Metrics collectMetrics() override;
     bool compareMetrics(Metrics& metrics_) const;
 };
@@ -63,7 +63,7 @@ struct AgentHandle {
 };
 
 //  отвечает за жизненный цикл агентов
-class AgentManager {
+class AgentService {
     std::unordered_map<std::string, AgentHandle> agents_;
 
 public:

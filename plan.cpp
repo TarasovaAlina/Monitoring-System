@@ -6,7 +6,7 @@
 */
 
 class Kernel {
-    std::unique_ptr<IAgentService> agentService_;
+    std::unique_ptr<IKernelManager> KernelManager_;
     std::unique_ptr<ILogger> logger_;
     std::unique_ptr<INotificationService> notificationService_;
 
@@ -18,9 +18,9 @@ public:
     // списка в журнал
     // системы мониторинга в папке ./logs/ .
     void putLogs() {
-        const Metrics metrics = agentService_->collectMetrics();
+        const Metrics metrics = KernelManager_->collectMetrics();
         logger_->write(metrics);
-        if (agentService_->compareMetrics(metrics))
+        if (KernelManager_->compareMetrics(metrics))
             notifyUser();
     }
     
@@ -28,28 +28,28 @@ public:
 
 };
 
-class IAgentService {
+class IKernelManager {
 public:
-    ~IAgentService() = default;
+    ~IKernelManager() = default;
 
     virtual void updateAgents() = 0;
     virtual Metrics collectMetrics() = 0;
 };
 
-class AgentService : public IAgentService {
+class KernelManager : public IKernelManager {
     std::unique_ptr<IAgentLoader> agentLoader_;
-    std::unique_ptr<AgentManager> agentManager_;
+    std::unique_ptr<AgentService> AgentService_;
     std::unique_ptr<IAgentConfigService> agentConfigService_;
 public:
     void updateAgents() override;
 
-    //возвращет общий metrics, берет из AgentManager::updateMetrics
+    //возвращет общий metrics, берет из AgentService::updateMetrics
     Metrics collectMetrics() override;
     bool compareMetrics(Metrics& metrics_) const;
 };
 
 //  отвечает за жизненный цикл агентов
-class AgentManager {
+class AgentService {
     std::vector<std::unique_ptr<IAgent>> agents_;
 
 public:

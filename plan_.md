@@ -1,17 +1,14 @@
                          Kernel
                            │
                            ↓
-                    IAgentService
-                           │
-                           ↓
-                     AgentService
+                     KernelManager
                            │
              ┌─────────────┼─────────────┐
              ↓             ↓             ↓
-      AgentManager   ConfigService    ...
+      AgentService   ConfigService      ...
              │
              ↓
-       IAgentLoader
+        AgentLoader
              │
        ┌─────┴─────┐
        ↓           ↓
@@ -21,10 +18,4 @@
      IAgent
        │
        ↓
- Metrics
-       ↑
-       │
- MetricCollector
-       │
-       ↓
-      /proc
+    Metrics
