@@ -2,7 +2,7 @@
 #define SYSTEM_MONITORING_KERNEL_H
 
 #include "tools/agent_service.h"
-#include "logger.h"
+#include "tools/logger.h"
 #include <memory>
 #include <chrono>
 #include <atomic>
@@ -104,8 +104,8 @@ namespace core {
         void _searchNewAgents() noexcept;
 
         std::unique_ptr<KernelManager> _kernel_manager; ///< Отвечает за всю работу с агентами
-        std::unique_ptr<Logger> _logger; ///< Отвечает за запись данных в журнал
-        std::unique_ptr<NotificationService> _notification_service; ///< Отвечает за оповещение пользователя
+        std::unique_ptr<tools::Logger> _logger; ///< Отвечает за запись данных в журнал
+        std::unique_ptr<tools::NotificationService> _notification_service; ///< Отвечает за оповещение пользователя
 
         std::string _users_email; ///< Email адрес пользователя, куда должны приходить сообщения
 
