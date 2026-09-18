@@ -7,7 +7,7 @@
 
 #include "agent/agent.h"
 
-namespace agent {
+namespace core {
     /**
      * @class AgentHandler
      * @brief Надстройка над IAgent* классами.
@@ -31,8 +31,8 @@ namespace agent {
         std::chrono::milliseconds& timeout() noexcept; ///< Доступ к приватному полю _timeout
 
     private:
-        std::unique_ptr<IAgent> _agent; ///< Агент, выполняющий работу по сборке метрик
-        std::vector<Metric> _metrics; ///< Текущие значения метрик
+        std::unique_ptr<agent::IAgent> _agent; ///< Агент, выполняющий работу по сборке метрик
+        std::vector<agent::Metric> _metrics; ///< Текущие значения метрик
         std::string _name; ///< Имя агента
         std::chrono::milliseconds _timeout; ///< Таймаут обновления
     };
