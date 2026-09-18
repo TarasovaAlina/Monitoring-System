@@ -1,7 +1,7 @@
-#include "core/logger.h"
+#include "tools/logger.h"
 #include <chrono>
 
-namespace core {
+namespace tools {
     Logger::Logger() noexcept {
         auto time = std::chrono::system_clock::now();
         std::time_t now_date = std::chrono::system_clock::to_time_t(time);

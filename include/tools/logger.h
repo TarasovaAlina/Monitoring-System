@@ -11,7 +11,7 @@
 #include "agent/agent.h"
 #include <fstream>
 
-namespace core {
+namespace tools {
     /**
      * @class Logger
      * @brief Осуществляет запись актуальных метрик в виде списка в журнал системы мониторинга в папке ./logs
