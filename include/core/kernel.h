@@ -1,11 +1,9 @@
 #ifndef SYSTEM_MONITORING_KERNEL_H
 #define SYSTEM_MONITORING_KERNEL_H
 
-#include "tools/agent_service.h"
+#include "core/kernel_manager.h"
 #include "tools/logger.h"
 #include <memory>
-#include <chrono>
-#include <atomic>
 #include <thread>
 
 /**
@@ -20,17 +18,6 @@
  * @brief В этом пространстве имен описаны основные классы, которые управляют программой
  */
 namespace core {
-
-    /**
-     * @struct AgentInfo
-     * @brief Содержит подробную информацию об агенте
-     */
-    struct AgentInfo {
-        agent::AgentType type; ///< Тип агента
-        std::vector<std::string> metrics; ///< Список поддерживаемых метрик
-        std::chrono::time_point<std::chrono::system_clock> start_time; ///<
-        std::chrono::duration<std::chrono::milliseconds> refresh_time;
-    };
 
     /**
      * @class Kernel
