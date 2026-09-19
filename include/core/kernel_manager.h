@@ -3,7 +3,6 @@
 
 #include "tools/agent_service.h"
 #include "tools/config_service.h"
-#include "agent/agent.h"
 #include <memory>
 #include <chrono>
 
@@ -17,16 +16,6 @@
 #define SCAN_TIMEOUT 5000
 
 namespace core {
-    /**
-     * @struct AgentInfo
-     * @brief Содержит подробную информацию об агенте
-     */
-    struct AgentInfo {
-        agent::AgentType type; ///< Тип агента
-        std::vector<std::string> metrics; ///< Список поддерживаемых метрик
-        std::chrono::time_point<std::chrono::system_clock> start_time; ///< Время создания агента
-        std::chrono::duration<std::chrono::milliseconds> refresh_time; ///< Таймаут изменения метрик
-    };
 
     /**
      * @class KernelManager
