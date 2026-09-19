@@ -14,6 +14,16 @@
 #include <map>
 
 namespace agent {
+
+    /**
+     * @struct Metric
+     * @brief Содержит информацию об отдельной метрике, которую собирает агент
+     */
+    struct Metric {
+        std::string name; ///< Название метрики
+        double value; ///< Значение метрики
+    };
+
     /**
      * @class IMetricsCollector
      * @brief Интерфейс, описывающий классы, отвечающие за непосредственный сбор метрик системы
@@ -130,7 +140,7 @@ namespace agent {
          *
          * Для этого через определенный промежуток времени считываются значения байтов.
          * Пропускная способность рассчитывается по формуле:\n
-         * @code throughput = ((receive_bytes2 - receive_bytes1) + (transmit_bytes2 - transmit_bytes1)) / det_time
+         * @code throughput = ((receive_bytes2 - receive_bytes1) + (transmit_bytes2 - transmit_bytes1)) / det_time @endcode
          */
         std::vector<Metric> update() noexcept override;
 

@@ -9,7 +9,6 @@
  */
 
 #include "metrics_collector.h"
-#include <string>
 #include <vector>
 #include <memory>
 
@@ -19,14 +18,9 @@
  */
 namespace agent {
     /**
-     * @struct Metric
-     * @brief Содержит информацию об отдельной метрике, которую собирает агент
+     * @enum AgentType
+     * @brief Перечисление, хранящее возможные типы агентов, которые могут быть загружены в программу
      */
-    struct Metric {
-        std::string name; ///< Название метрики
-        double value; ///< Значение метрики
-    };
-
     enum AgentType {
         CPU_AGENT, ///< Агент, отслеживающий загрузку CPU
         MEMORY_AGENT, ///< Агент, отслеживающий использование RAM и HDD
