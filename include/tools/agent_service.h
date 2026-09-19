@@ -1,79 +1,62 @@
+#ifndef SYSTEM_MONITORING_AGENT_SERVICE_H
+#define SYSTEM_MONITORING_AGENT_SERVICE_H
 
+/**
+ * @file agent_service.h
+ * @brief В этом заголовочном файле описан класс AgentService
+ * @date 18.09.2026
+ * @authors Tarasova Alina, Kovalev Georgiy
+ */
 
-class KernelManager : public IKernelManager {
-    std::unique_ptr<IAgentLoader> agentLoader_;
-    std::unique_ptr<AgentService> AgentService_;
-    std::unique_ptr<IAgentConfigService> agentConfigService_;
-public:
-    void updateAgents() override;
+#include "config_service.h"
+#include "agent/agent.h"
+#include "core/agent_handler.h"
 
-    //возвращет общий metrics, берет из AgentService::updateMetrics
-    Metrics collectMetrics() override;
-    bool compareMetrics(Metrics& metrics_) const;
-};
+namespace core {
+    /**
+     * @class AgentService
+     * @brief Управляет всеми агентами в программе
+     */
+    class AgentService {
+    public:
+        /**
+         * @brief Обновляет список текущих агентов, работающих в программе.
+         * Если какая-то библиотека была удалена, то такой объект выгружается из памяти.
+         * Если, наоборот, найдена новая библиотека, то создается новый объект для ее управления
+         * @param agent_data_list Информация об агентах, считанных из конфигов
+         */
+        void update(const std::vector<ConfigInfo>& agent_data_list) noexcept;
 
-/*
-SharedLibrary
-     │
-     ├── dlopen()  → загрузить .so
-     │
-     ├── dlsym()   → найти функцию внутри .so
-     │
-     └── dlclose() → выгрузить .so
-*/
+        /**
+         * @brief Передает информацию о конкретном агенте
+         * @param name Имя данного агента
+         * @return Подробная информация об агенте, которая будет отображена в UI
+         */
+        AgentInfo getAgentInfo(const std::string& name);
 
-class SharedLibrary {
-public:
-    explicit SharedLibrary(const std::string& path);
+        /**
+         * @brief Передает собранные метрики от всех активных агентов
+         * @return Список данных в виде имя_метрики : значение
+         */
+        std::vector<agent::Metric> collectMetrics() noexcept;
 
-    ~SharedLibrary();
+        /**
+         * @brief Включает конкретный агент (делает его активным)
+         * @param name Имя этого агента
+         */
+        void enable(const std::string& name) noexcept;
 
-    SharedLibrary(const SharedLibrary&) = delete;
-    SharedLibrary& operator=(const SharedLibrary&) = delete;
+        /**
+         * @brief Выключает конкретный агент (делает его неактивным)
+         * @param name Имя этого агента
+         */
+        void disable(const std::string& name) noexcept;
+    private:
+        /**
+         * @brief Множество агентов, сохраненных под своими именами
+         */
+        std::unordered_map<std::string, std::unique_ptr<AgentHandler>> _agents_list;
+    };
+}
 
-    SharedLibrary(SharedLibrary&& other) noexcept;
-    SharedLibrary& operator=(SharedLibrary&& other) noexcept;
-
-    void* symbol(const char* name) const;
-
-private:
-    void* handle_{nullptr};
-};
-
-struct AgentDeleter {
-    DestroyAgentFn destroy = nullptr;
-
-    void operator()(IAgent* agent) const {
-        if (agent && destroy) {
-            destroy(agent);
-        }
-    }
-};
-
-// связывает конкретную библиотеку с конкретным экземпляром агента.
-struct AgentHandle {
-    std::string name;
-    std::string path;
-
-    SharedLibrary library;
-
-    std::unique_ptr<IAgent, AgentDeleter> agent;
-
-    bool enabled{true};
-};
-
-//  отвечает за жизненный цикл агентов
-class AgentService {
-    std::unordered_map<std::string, AgentHandle> agents_;
-
-public:
-    void scan();
-    void load(const std::string& path);
-    void unload(const std::string& name);
-
-    void enable(const std::string& name);
-    void disable(const std::string& name);
-
-    std::vector<Metric> collectMetrics();
-
-};
+#endif
