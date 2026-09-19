@@ -1,16 +1,17 @@
-#ifndef SYSTEM_MONITORING_AGENT_INTERFACE_H
-#define SYSTEM_MONITORING_AGENT_INTERFACE_H
+#ifndef SYSTEM_MONITORING_AGENT_H
+#define SYSTEM_MONITORING_AGENT_H
 
 /**
  * @file agent.h
- * @brief В этом файле описан интерфейс класса агента,
- * который будет использоваться для построения конкретных реализаций агентов
+ * @brief В этом файле описан класс Agent
  * @author Georgiy Kovalev
  * @date 04.09.2026
  */
 
+#include "metrics_collector.h"
 #include <string>
 #include <vector>
+#include <memory>
 
 /**
  * @namespace agent
@@ -33,32 +34,31 @@ namespace agent {
     };
 
     /**
-     * @class IAgent
-     * @brief Базовый класс, описывающий организацию агентов для сбора метрик
+     * @class Agent
+     * @brief Класс, описывающий агента для сборки метрик
      */
-    class IAgent {
+    class Agent {
     public:
-        explicit IAgent(AgentType type) noexcept : _type(type) {}
-        virtual ~IAgent() noexcept = default;
+        explicit Agent(AgentType type) noexcept;
 
         /**
          * @brief Каждый класс агента должен иметь метод,
          * позволяющий подгружать актуальные значения метрик, собираемые этим агентом-библиотекой
          */
-        virtual void updateMetrics() noexcept = 0;
+        void updateMetrics() noexcept;
+        void switchType(const AgentType& new_type) noexcept;
 
         /**
          * @brief Каждый класс агента должен иметь метод,
          * позволяющий выдавать актуальные данные для их отображения в GUI
          * @return Список метрик, которые собирает агент
          */
-        virtual std::vector<Metric> getMetrics() noexcept = 0;
+        std::vector<Metric> getMetrics() noexcept;
+        AgentType type() const noexcept;
 
-        AgentType type() const noexcept {
-            return _type;
-        }
-    protected:
+    private:
         AgentType _type; ///< Тип агента
+        std::unique_ptr<IMetricsCollector> _metrics_collector; ///< Сборщик метрик, который имплементирует в себе логику получения данных
     };
 }
 
