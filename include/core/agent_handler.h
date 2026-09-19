@@ -30,7 +30,6 @@ namespace core {
         void setSleepMode(bool is_sleep) noexcept; ///< Устанавливает режим работы (сон или активная работа)
         void unload() noexcept; ///< Выгружает библиотеку
 
-        std::string& name() noexcept; ///< Доступ к приватному полю _name
         std::chrono::milliseconds& timeout() noexcept; ///< Доступ к приватному полю _timeout
         std::vector<agent::Metric>& metrics() noexcept; ///< Доступ к текущим параметрам метрик
 
@@ -41,7 +40,6 @@ namespace core {
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна
         std::vector<agent::Metric> _metrics; ///< Текущие значения метрик
-        std::string _name; ///< Имя агента
         std::chrono::milliseconds _timeout; ///< Таймаут обновления
     };
 }

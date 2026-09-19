@@ -56,10 +56,6 @@ namespace core {
         }
     }
 
-    std::string &AgentHandler::name() noexcept {
-        return _name;
-    }
-
     std::chrono::milliseconds &AgentHandler::timeout() noexcept {
         return _timeout;
     }
