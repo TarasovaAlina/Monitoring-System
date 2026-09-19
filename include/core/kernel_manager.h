@@ -1,7 +1,7 @@
 #ifndef SYSTEM_MONITORING_KERNEL_MANAGER_H
 #define SYSTEM_MONITORING_KERNEL_MANAGER_H
 
-#include "tools/agent_service.h"
+#include "agent_service.h"
 #include "tools/config_service.h"
 #include <memory>
 #include <chrono>

@@ -8,7 +8,7 @@
  * @authors Tarasova Alina, Kovalev Georgiy
  */
 
-#include "config_service.h"
+#include "../tools/config_service.h"
 #include "agent/agent.h"
 #include "core/agent_handler.h"
 
