@@ -3,9 +3,10 @@
 #include <thread>
 
 namespace core {
-    AgentHandler::AgentHandler(const std::string &path, int milliseconds)
+    AgentHandler::AgentHandler(const std::string &path, agent::AgentType type, int milliseconds)
     : _running(true)
     , _sleeping(false)
+    , _type(type)
     , _timeout(milliseconds) {
         _lib_agent = dlopen(path.c_str(), RTLD_LAZY);
 
@@ -54,6 +55,10 @@ namespace core {
             _lib_agent = nullptr;
             _running.store(false);
         }
+    }
+
+    agent::AgentType &AgentHandler::type() noexcept {
+        return _type;
     }
 
     std::chrono::milliseconds &AgentHandler::timeout() noexcept {
