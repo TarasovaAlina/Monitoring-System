@@ -47,12 +47,13 @@ namespace agent {
          * позволяющий выдавать актуальные данные для их отображения в GUI
          * @return Список метрик, которые собирает агент
          */
-        std::vector<Metric> getMetrics() noexcept;
+        const std::vector<Metric>& getMetrics() const noexcept;
         AgentType type() const noexcept;
 
     private:
         AgentType _type; ///< Тип агента
         std::unique_ptr<IMetricsCollector> _metrics_collector; ///< Сборщик метрик, который имплементирует в себе логику получения данных
+        std::vector<Metric> _metrics;
     };
 }
 
