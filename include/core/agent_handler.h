@@ -23,13 +23,14 @@ namespace core {
          * @param milliseconds Таймаут обновления метрик, передаваемый от ConfigService
          * @throw std::runtime_error Если не удалось загрузить динамическую библиотеку
          */
-        AgentHandler(const std::string& path, int milliseconds);
+        AgentHandler(const std::string& path, agent::AgentType type, int milliseconds);
         ~AgentHandler() noexcept;
 
         void work() noexcept; ///< Через каждые _timeout секунд обновляет метрики
         void setSleepMode(bool is_sleep) noexcept; ///< Устанавливает режим работы (сон или активная работа)
         void unload() noexcept; ///< Выгружает библиотеку
 
+        agent::AgentType& type() noexcept; ///< Доступ к приватному полю _type
         std::chrono::milliseconds& timeout() noexcept; ///< Доступ к приватному полю _timeout
         std::vector<agent::Metric>& metrics() noexcept; ///< Доступ к текущим параметрам метрик
 
@@ -37,9 +38,12 @@ namespace core {
         std::function<void ()> _updateMetricsCallback;
         std::function<std::vector<agent::Metric> ()> _gettingMetricsCallback;
         void* _lib_agent; ///< Загруженная динамическая библиотека агента
+
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна
+
         std::vector<agent::Metric> _metrics; ///< Текущие значения метрик
+        agent::AgentType _type; ///< Тип агента
         std::chrono::milliseconds _timeout; ///< Таймаут обновления
     };
 }
