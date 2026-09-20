@@ -8,7 +8,7 @@
  * @author Kovalev Georgiy
  */
 
-#include <unordered_map>
+#include <set>
 #include <string>
 #include <vector>
 #include <map>
@@ -32,13 +32,13 @@ namespace agent {
     public:
         virtual std::vector<Metric> update() noexcept = 0;
         virtual ~IMetricsCollector() = default;
-        void setUsingMetrics(const std::vector<std::string>& metrics_list);
+
+        std::set<std::string>& usingMetrics() noexcept {
+            return _using_metrics;
+        }
 
     protected:
-        /**
-         * @brief Хранит информацию о том, какие метрики из стандартных агент собирает
-         */
-        std::unordered_map<std::string, bool> _using_metrics;
+        std::set<std::string> _using_metrics; ///< Хранит информацию о том, какие метрики собирает агент
     };
 
     /**
