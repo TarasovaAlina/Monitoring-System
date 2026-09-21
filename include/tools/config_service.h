@@ -1,5 +1,15 @@
 #include <fstream>
-using json = nlohmann::json;
+#include <vector>
+#include "agent/agent.h"
+
+#ifndef CONFIG_SERVICE_H
+#define CONFIG_SERVICE_H
+
+
+namespace core {
+
+using nlohmann::json;
+using agent::AgentType;
 
 /**
  * @file config_service.h
@@ -36,10 +46,10 @@ struct MetricConfig {
  */
 
 struct ConfigInfo {
-    std::string agentName_; ///< Имя агента
-    std::string agentType_; ///< Тип агента (соответствует AgentType)
-    int updateInterval_; ///< Время обновления метрик
-    std::vector<MetricConfig> metricConfig_; ///< Список критических значений метрик
+    std::string agentName; ///< Имя агента
+    AgentType agentType; ///< Тип агента (соответствует AgentType)
+    int updateInterval; ///< Время обновления метрик
+    std::vector<MetricConfig> metricConfig; ///< Список критических значений метрик
 };
 
 /**
@@ -47,10 +57,15 @@ struct ConfigInfo {
  * @brief Класс по работе с config файлом
  */
 class ConfigService {
+    AgentType getAgentType(std::string& agentType) const noexcept;
 public:
     /**
      * @brief Обработка config файла для последующей загрузки в агентов
      * @return вектор с информацией для каждого агента с соответствующими параметрами
      */
-    std::vector<ConfigInfo> load() const override;
+    std::vector<ConfigInfo> load() const;
 };
+
+}
+
+#endif

@@ -37,7 +37,7 @@ std::vector<ConfigInfo> ConfigService::load() const {
 
         ConfigInfo configInfo{
             agent["name"].get<std::string>(),
-            agent["type"].get<std::string>(),
+            getAgentType(agent["type"].get<std::string>()),
             agent["update_interval"].get<int>(),
             {}
         };
@@ -78,4 +78,17 @@ std::vector<ConfigInfo> ConfigService::load() const {
     }
 
     return result;
+}
+
+AgentType ConfigService::getAgentType(std::string& agentType) const noexcept {
+    AgentType agentTypeRes{};
+
+    if (agentType == "CPU_AGENT")
+        agentTypeRes = CPU_AGENT;
+    else if (agentType == "MEMORY_AGENT")
+        agentTypeRes = MEMORY_AGENT;
+    else if (agentType == "NETWORK_AGENT")
+        agentTypeRes = NETWORK_AGENT;
+    
+    return agentTypeRes;
 }
