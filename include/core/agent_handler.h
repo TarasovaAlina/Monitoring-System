@@ -3,7 +3,6 @@
 
 #include <atomic>
 #include <chrono>
-#include <functional>
 #include <vector>
 #include <string>
 
@@ -16,6 +15,9 @@ namespace core {
      * Позволяет настраивать и управлять агентами как динамически загружаемыми библиотеками
      */
     class AgentHandler {
+        // Определяем типы для функций фабрики
+        typedef agent::IAgent* (*CreateAgentFunc)(agent::AgentType);
+        typedef void (*DestroyAgentFunc)(agent::IAgent*);
     public:
         /**
          * @brief Создается после того, как был прочитан соответствующий конфиг.
@@ -35,9 +37,8 @@ namespace core {
         std::vector<agent::Metric>& metrics() noexcept; ///< Доступ к текущим параметрам метрик
 
     private:
-        std::function<void ()> _updateMetricsCallback;
-        std::function<std::vector<agent::Metric> ()> _gettingMetricsCallback;
-        void* _lib_agent; ///< Загруженная динамическая библиотека агента
+        void* _shared_lib; ///< Загруженная динамическая библиотека агента
+        std::unique_ptr<agent::Agent, DestroyAgentFunc> _agent;
 
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна

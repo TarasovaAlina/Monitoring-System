@@ -8,21 +8,20 @@ namespace core {
     , _sleeping(false)
     , _type(type)
     , _timeout(milliseconds) {
-        _lib_agent = dlopen(path.c_str(), RTLD_LAZY);
+        _shared_lib = dlopen(path.c_str(), RTLD_LAZY);
 
-        if (_lib_agent == nullptr) {
+        if (_shared_lib == nullptr) {
             throw std::runtime_error("Failed to load library: " + path);
         }
 
-        auto updateFunc = dlsym(_lib_agent, "updateMetrics");
-        auto getMetricsFunc = dlsym(_lib_agent, "getMetrics");
+        auto createFunc = static_cast<CreateAgentFunc>(dlsym(_shared_lib, "CreateAgent"));
+        auto destroyFunc = static_cast<DestroyAgentFunc>(dlsym(_shared_lib, "DestroyAgent"));
 
-        if (!updateFunc || !getMetricsFunc) {
+        if (!createFunc || !destroyFunc) {
             throw std::runtime_error("Failed to load symbols from the library: " + path);
         }
 
-        _updateMetricsCallback = updateFunc();
-        _updateMetricsCallback = getMetricsFunc();
+        _agent = std::make_unique<agent::IAgent, DestroyAgentFunc>(createFunc(_type), destroyFunc);
     }
 
     AgentHandler::~AgentHandler() noexcept {
@@ -33,9 +32,9 @@ namespace core {
         while (_running.load()) {
             // Обновление метрик только если агент находится в активном состоянии
             if (!_sleeping.load()) {
-                _updateMetricsCallback();
+                _agent->updateMetrics();
 
-                _metrics = _gettingMetricsCallback();
+                _metrics = _agent->getMetrics();
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(_timeout));
             }
@@ -49,10 +48,10 @@ namespace core {
     }
 
     void AgentHandler::unload() noexcept {
-        if (_lib_agent != nullptr) {
-            dlclose(_lib_agent);
+        if (_shared_lib != nullptr) {
+            dlclose(_shared_lib);
 
-            _lib_agent = nullptr;
+            _shared_lib = nullptr;
             _running.store(false);
         }
     }
