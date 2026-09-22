@@ -8,9 +8,10 @@
  * @authors Tarasova Alina, Kovalev Georgiy
  */
 
-#include "../tools/config_service.h"
+#include "tools/config_service.h"
 #include "agent/agent.h"
 #include "core/agent_handler.h"
+#include <unordered_map>
 
 namespace core {
 
@@ -21,8 +22,8 @@ namespace core {
     struct AgentInfo {
         agent::AgentType type; ///< Тип агента
         std::vector<std::string> metrics; ///< Список поддерживаемых метрик
-        std::chrono::time_point<std::chrono::system_clock> start_time; ///< Время создания агента
-        std::chrono::duration<std::chrono::milliseconds> refresh_time; ///< Таймаут изменения метрик
+        std::chrono::milliseconds elapsed_time; ///< Время, прошедшее с момента создания агента
+        std::chrono::milliseconds refresh_time; ///< Таймаут изменения метрик
     };
 
     /**
