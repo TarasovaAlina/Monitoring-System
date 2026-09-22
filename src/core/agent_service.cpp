@@ -1,6 +1,14 @@
 #include "core/agent_service.h"
 
 namespace core {
+    AgentService::~AgentService() noexcept {
+        for (auto& [agent_name, work_thread]: _agent_work_threads_list) {
+            _agents_list.erase(agent_name);
+
+            work_thread.join();
+        }
+    }
+
     void AgentService::update(const std::vector<ConfigInfo> &agent_data_list) noexcept {
         // Проверяем, были ли такие агенты загружены ранее
         for (auto &config: agent_data_list) {
@@ -10,6 +18,9 @@ namespace core {
                 _agents_list[config.agentName] = std::make_unique<AgentHandler>(
                     // Нужно переделать поле agentType, чтобы оно имело тип agent::AgentType
                     path_agent, static_cast<agent::AgentType>(config.agentType), config.updateInterval);
+
+                // Запускаем агент работать в отдельном потоке
+                _agent_work_threads_list[config.agentName] = std::thread(_agents_list[config.agentName]->work);
             }
         }
 
@@ -26,7 +37,13 @@ namespace core {
                 }
 
                 // Если агента с таким именем нет в новом списке, значит его удалил пользователь
-                if (!found) _agents_list.erase(agent.first);
+                if (!found) {
+                    _agents_list.erase(agent.first);
+
+                    // Завершаем соотвествующий поток
+                    _agent_work_threads_list[agent.first].join();
+                    _agent_work_threads_list.erase(agent.first);
+                }
             }
         }
     }

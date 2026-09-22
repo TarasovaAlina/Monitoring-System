@@ -12,6 +12,8 @@
 #include "agent/agent.h"
 #include "core/agent_handler.h"
 #include <unordered_map>
+#include <map>
+#include <thread>
 
 namespace core {
 
@@ -32,6 +34,7 @@ namespace core {
      */
     class AgentService {
     public:
+        ~AgentService() noexcept;
         /**
          * @brief Обновляет список текущих агентов, работающих в программе.
          * Если какая-то библиотека была удалена, то такой объект выгружается из памяти.
@@ -67,8 +70,15 @@ namespace core {
     private:
         /**
          * @brief Множество агентов, сохраненных под своими именами
+         * @note Используем unordered_map, так как ожидается большое количество обращений,
+         * поэтому необходим быстрый доступ к ключу
          */
         std::unordered_map<std::string, std::unique_ptr<AgentHandler>> _agents_list;
+        /**
+         * @brief Множество потоков, ассоциированных с этими агентами,
+         * в которых работает считывание метрик
+         */
+        std::map<std::string, std::thread> _agent_work_threads_list;
     };
 }
 
