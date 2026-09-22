@@ -30,15 +30,17 @@ namespace core {
 
         void work() noexcept; ///< Через каждые _timeout секунд обновляет метрики
         void setSleepMode(bool is_sleep) noexcept; ///< Устанавливает режим работы (сон или активная работа)
+        void switchType(const agent::AgentType& type) noexcept; ///< Устанавливает новый тип агента
         void unload() noexcept; ///< Выгружает библиотеку
 
-        agent::AgentType& type() noexcept; ///< Доступ к приватному полю _type
+        agent::AgentType type() const noexcept; ///< Доступ к приватному полю _type
         std::chrono::milliseconds& timeout() noexcept; ///< Доступ к приватному полю _timeout
         std::vector<agent::Metric>& metrics() noexcept; ///< Доступ к текущим параметрам метрик
 
     private:
         void* _shared_lib; ///< Загруженная динамическая библиотека агента
-        std::unique_ptr<agent::Agent, DestroyAgentFunc> _agent;
+        std::pair<CreateAgentFunc, DestroyAgentFunc> _agent_func; ///< Функции фабрики, которые используются для создания агентов
+        std::unique_ptr<agent::Agent, DestroyAgentFunc> _agent; ///< Агент, загруженный из динамической библиотеки
 
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна

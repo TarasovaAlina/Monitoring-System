@@ -21,6 +21,7 @@ namespace core {
             throw std::runtime_error("Failed to load symbols from the library: " + path);
         }
 
+        _agent_func = std::make_pair(createFunc, destroyFunc);
         _agent = std::make_unique<agent::IAgent, DestroyAgentFunc>(createFunc(_type), destroyFunc);
     }
 
@@ -32,9 +33,7 @@ namespace core {
         while (_running.load()) {
             // Обновление метрик только если агент находится в активном состоянии
             if (!_sleeping.load()) {
-                _agent->updateMetrics();
-
-                _metrics = _agent->getMetrics();
+                _metrics = _agent->updateMetrics();
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(_timeout));
             }
@@ -47,6 +46,13 @@ namespace core {
         }
     }
 
+    void AgentHandler::switchType(const agent::AgentType &type) noexcept {
+        if (type != _type) {
+            _type = type;
+            _agent = std::make_unique<agent::IAgent, DestroyAgentFunc>(_agent_func.first(_type), _agent_func.second);
+        }
+    }
+
     void AgentHandler::unload() noexcept {
         if (_shared_lib != nullptr) {
             dlclose(_shared_lib);
@@ -56,7 +62,7 @@ namespace core {
         }
     }
 
-    agent::AgentType &AgentHandler::type() noexcept {
+    agent::AgentType AgentHandler::type() const noexcept {
         return _type;
     }
 
@@ -67,5 +73,4 @@ namespace core {
     std::vector<agent::Metric> &AgentHandler::metrics() noexcept {
         return _metrics;
     }
-
 }
