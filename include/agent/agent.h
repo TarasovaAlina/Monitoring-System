@@ -28,10 +28,24 @@ namespace agent {
     };
 
     /**
+     * @class IAgent
+     * @brief Абстрактный класс, который необходим для корректной загрузки из динамической библиотеки
+     */
+    class IAgent {
+    public:
+        virtual ~IAgent() noexcept = default;
+        virtual void updateMetrics() noexcept = 0;
+        virtual void switchType(const AgentType& new_type) noexcept = 0;
+
+        virtual const std::vector<Metric>& getMetrics() const noexcept = 0;
+        virtual AgentType type() const noexcept = 0;
+    };
+
+    /**
      * @class Agent
      * @brief Класс, описывающий агента для сборки метрик
      */
-    class Agent {
+    class Agent final : public IAgent {
     public:
         explicit Agent(AgentType type) noexcept;
 
@@ -39,22 +53,33 @@ namespace agent {
          * @brief Каждый класс агента должен иметь метод,
          * позволяющий подгружать актуальные значения метрик, собираемые этим агентом-библиотекой
          */
-        void updateMetrics() noexcept;
-        void switchType(const AgentType& new_type) noexcept;
+        void updateMetrics() noexcept override;
+        void switchType(const AgentType& new_type) noexcept override;
 
         /**
          * @brief Каждый класс агента должен иметь метод,
          * позволяющий выдавать актуальные данные для их отображения в GUI
          * @return Список метрик, которые собирает агент
          */
-        const std::vector<Metric>& getMetrics() const noexcept;
-        AgentType type() const noexcept;
+        const std::vector<Metric>& getMetrics() const noexcept override;
+        AgentType type() const noexcept override;
 
     private:
         AgentType _type; ///< Тип агента
         std::unique_ptr<IMetricsCollector> _metrics_collector; ///< Сборщик метрик, который имплементирует в себе логику получения данных
         std::vector<Metric> _metrics;
     };
+
+    // Экспорт C-функций для возможной загрузки объекта Agent из динамической библиотеки
+    extern "C" {
+        __attribute__((visibility("default"))) inline IAgent* CreateAgent(AgentType type) {
+            return new Agent(type);
+        }
+
+        __attribute__((visibility("default"))) inline void DestroyAgent(IAgent* agent) {
+            delete agent;
+        }
+    }
 }
 
 #endif
