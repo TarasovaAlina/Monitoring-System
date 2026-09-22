@@ -23,6 +23,7 @@ namespace core {
 
         _agent_func = std::make_pair(createFunc, destroyFunc);
         _agent = std::make_unique<agent::IAgent, DestroyAgentFunc>(createFunc(_type), destroyFunc);
+        _start_time = std::chrono::steady_clock::now();
     }
 
     AgentHandler::~AgentHandler() noexcept {
@@ -73,4 +74,12 @@ namespace core {
     std::vector<agent::Metric> &AgentHandler::metrics() noexcept {
         return _metrics;
     }
+
+    std::chrono::milliseconds AgentHandler::timeElapsedSinceStart() const noexcept {
+        // Вычисляем, сколько времени прошло с создания агента
+        auto end_time = std::chrono::steady_clock::now();
+
+        return std::chrono::duration_cast<std::chrono::milliseconds>(end_time - _start_time);
+    }
+
 }
