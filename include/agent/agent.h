@@ -34,11 +34,7 @@ namespace agent {
     class IAgent {
     public:
         virtual ~IAgent() noexcept = default;
-        virtual void updateMetrics() noexcept = 0;
-        virtual void switchType(const AgentType& new_type) noexcept = 0;
-
-        virtual const std::vector<Metric>& getMetrics() const noexcept = 0;
-        virtual AgentType type() const noexcept = 0;
+        virtual const std::vector<Metric> updateMetrics() const noexcept = 0;
     };
 
     /**
@@ -47,27 +43,20 @@ namespace agent {
      */
     class Agent final : public IAgent {
     public:
+        /**
+         * @brief Создание специального сборщика метрик, который будет заниматься получением актуальных данных
+         * @param type Тип требуемого агента
+         */
         explicit Agent(AgentType type) noexcept;
 
         /**
-         * @brief Каждый класс агента должен иметь метод,
-         * позволяющий подгружать актуальные значения метрик, собираемые этим агентом-библиотекой
+         * @brief Подгрузка актуальных значений метрик, собираемые этим агентом-библиотекой
+         * @return Список актуальных данных
          */
-        void updateMetrics() noexcept override;
-        void switchType(const AgentType& new_type) noexcept override;
-
-        /**
-         * @brief Каждый класс агента должен иметь метод,
-         * позволяющий выдавать актуальные данные для их отображения в GUI
-         * @return Список метрик, которые собирает агент
-         */
-        const std::vector<Metric>& getMetrics() const noexcept override;
-        AgentType type() const noexcept override;
+        const std::vector<Metric> updateMetrics() const noexcept override;
 
     private:
-        AgentType _type; ///< Тип агента
         std::unique_ptr<IMetricsCollector> _metrics_collector; ///< Сборщик метрик, который имплементирует в себе логику получения данных
-        std::vector<Metric> _metrics;
     };
 
     // Экспорт C-функций для возможной загрузки объекта Agent из динамической библиотеки
