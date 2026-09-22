@@ -57,6 +57,13 @@ namespace core {
         std::vector<agent::Metric> collectMetrics() noexcept;
 
         /**
+         * @brief Сообщает, какие агенты загружены в данный момент.
+         * Необходимо для того, чтобы потом получать информацию по этим агентам
+         * @return Список имен агентов
+         */
+        std::vector<std::string> agentsNamesList() const noexcept;
+
+        /**
          * @brief Включает конкретный агент (делает его активным)
          * @param name Имя этого агента
          */

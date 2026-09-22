@@ -52,11 +52,12 @@ namespace core {
         for (auto& agent: _agents_list) {
             if (agent.first == name) {
                 // Формируется информация о нужном агенте
-                // return AgentInfo {
-                //     agent.second.get()->type(),
-                //     agent.second.get()->metrics(),
-                //     agent.second.get()->timeout()
-                // }
+                return AgentInfo {
+                    agent.second->type(),
+                    agent.second->metrics(),
+                    agent.second->timeElapsedSinceStart(),
+                    agent.second->timeout()
+                };
             }
         }
 
@@ -75,6 +76,17 @@ namespace core {
         }
 
         return metrics;
+    }
+
+    std::vector<std::string> AgentService::agentsNamesList() const noexcept {
+        std::vector<std::string> names{};
+        names.reserve(_agents_list.size());
+
+        for (auto& agent: _agents_list) {
+            names.emplace_back(agent.first);
+        }
+
+        return names;
     }
 
     void AgentService::enable(const std::string &name) noexcept {
