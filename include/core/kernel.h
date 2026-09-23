@@ -21,9 +21,23 @@ namespace core {
 
     /**
      * @class Kernel
-     * @brief Главный класс программы.
-     * Осуществляет с помощью вспомогательного класса AgentLoader подключение новых агентов к системе.
-     * Также с заданной переодичностью осуществляет обновление актуальных метрик с помощью и запись их
+     * @brief Главный класс программы.\n
+     * Осуществляет с помощью класса AgentService подключение новых агентов к системе.
+     * Также с заданной переодичностью с помощью класса ConfigService осуществляет обновление актуальных метрик и запись их в журнал
+     *
+     * Поддерживаемый функционал:
+     * - Получение списка загруженных агентов
+     * - Получение подробной информации об агенте
+     * - Изменение конфигурации уже запущенного агента:
+     *  - Имя агента
+     *  - Тип агента
+     *  - Список крит.значений метрик
+     *  - Время обновления метрик
+     * - Отключение/включение выбранного агента
+     * - Уведомление пользователя, если значения достигли критических значений
+     * - Включение/выключение дублирования оповещения на указанный email
+     * - Менять email пользователя
+     *
      */
     class Kernel {
     public:
@@ -42,6 +56,47 @@ namespace core {
          * при помощи вспомогательного класса Logger
          */
         void update() noexcept;
+
+        /**
+         * @brief Передает список загруженных агентов
+         * @return Список имен агентов
+         */
+        std::vector<std::string> agentsList() const noexcept;
+
+        /**
+         * @brief Передает в интерфейс подробную информацию об агенте
+         * @param name Имя агента, о котором нужно получить данные
+         * @return Подробная информация в виде структуры
+         */
+        AgentInfo getAgentInfo(const std::string& name) noexcept;
+
+        /**
+         * @brief Меняет имя конкретного агента
+         * @param old_name Старое имя агента
+         * @param new_name Новое имя агента
+         */
+        void changeAgentSetting(const std::string& old_name, const std::string& new_name) noexcept;
+
+        /**
+         * Меняет тип агента
+         * @param name Имя конкретного агента
+         * @param new_type Новый тип этого агента
+         */
+        void changeAgentSetting(const std::string& name, agent::AgentType new_type) noexcept;
+
+        /**
+         * Меняет критические значения метрик агента
+         * @param name Имя конкретного агента
+         * @param critical_metrics_list Список критических значений метрик
+         */
+        void changeAgentSetting(const std::string& name, const std::vector<MetricConfig>& critical_metrics_list) noexcept;
+
+        /**
+         * Меняет время обновления метрик агента
+         * @param name Имя конкретного агента
+         * @param new_timeout Новое время
+         */
+        void changeAgentSetting(const std::string& name, int new_timeout) noexcept;
 
         /**
          * @brief Отключает выбранный в списке активный агент.
@@ -69,14 +124,13 @@ namespace core {
          * @brief Возможность включать/выключать дублирование оповещений на указанный email адрес
          * @param is_enable Включено, если true, иначе выключено
          */
-        void enableEmailDuplication(bool is_enable) noexcept;
+        void enableNotificationsDuplication(bool is_enable) noexcept;
 
         /**
-         * @brief Передает в интерфейс подробную информацию об агенте
-         * @param name Имя агента, о котором нужно получить данные
-         * @return Подробная информация в виде структуры
+         * @brief Установление нового email адреса, куда программа будет присылать предупреждения
+         * @param email Корректный email адрес
          */
-        AgentInfo getAgentInfo(const std::string& name) noexcept;
+        void setEmail(const std::string& email) noexcept;
 
         /**
          * @return true, если при создании ядра не произошло ошибок
@@ -92,9 +146,6 @@ namespace core {
 
         std::unique_ptr<KernelManager> _kernel_manager; ///< Отвечает за всю работу с агентами
         std::unique_ptr<tools::Logger> _logger; ///< Отвечает за запись данных в журнал
-        std::unique_ptr<tools::NotificationService> _notification_service; ///< Отвечает за оповещение пользователя
-
-        std::string _users_email; ///< Email адрес пользователя, куда должны приходить сообщения
 
         std::thread _search_agents_thread; ///< Хранит поток, в котором происходит поиск агентов в директории ./agents
         std::atomic<bool> _work_flag; ///< Атомарный флаг, который показывает, нужно ли продолжать работу потоков
