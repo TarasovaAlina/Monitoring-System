@@ -2,10 +2,10 @@
 
 namespace core {
     AgentService::~AgentService() noexcept {
-        for (auto& [agent_name, work_thread]: _agent_work_threads_list) {
-            _agents_list.erase(agent_name);
+        for (auto& [agent_name, agent_core]: _agents_list) {
+            agent_core.agent->unload();
 
-            work_thread.join();
+            agent_core.agent_work_thread.join();
         }
     }
 
@@ -15,12 +15,16 @@ namespace core {
             if (!_agents_list.contains(config.agentName)) {
                 // Загружаем новый агент
                 std::string path_agent = "lib" + config.agentName + ".so";
-                _agents_list[config.agentName] = std::make_unique<AgentHandler>(
-                    // Нужно переделать поле agentType, чтобы оно имело тип agent::AgentType
-                    path_agent, static_cast<agent::AgentType>(config.agentType), config.updateInterval);
+                _agents_list[config.agentName] = AgentCore {};
+
+                _agents_list[config.agentName].agent =
+                    std::make_unique<AgentHandler>(path_agent, config.agentType, config.updateInterval);
 
                 // Запускаем агент работать в отдельном потоке
-                _agent_work_threads_list[config.agentName] = std::thread(_agents_list[config.agentName]->work);
+                _agents_list[config.agentName].agent_work_thread = std::thread(_agents_list[config.agentName].agent->work);
+
+                // Передаем критические значения метрик
+                _agents_list[config.agentName].critical_metrics_values = config.metricConfig;
             }
         }
 
@@ -38,26 +42,21 @@ namespace core {
 
                 // Если агента с таким именем нет в новом списке, значит его удалил пользователь
                 if (!found) {
-                    _agents_list.erase(agent.first);
+                    // Удаляем обработчик агента и рабочий поток
+                    agent.second.agent->unload();
+                    agent.second.agent_work_thread.join();
 
-                    // Завершаем соотвествующий поток
-                    _agent_work_threads_list[agent.first].join();
-                    _agent_work_threads_list.erase(agent.first);
+                    _agents_list.erase(agent.first);
                 }
             }
         }
     }
 
-    AgentInfo AgentService::getAgentInfo(const std::string &name) {
+    std::unique_ptr<AgentHandler>& AgentService::getAgent(const std::string &name) {
         for (auto& agent: _agents_list) {
             if (agent.first == name) {
-                // Формируется информация о нужном агенте
-                return AgentInfo {
-                    agent.second->type(),
-                    agent.second->metrics(),
-                    agent.second->timeElapsedSinceStart(),
-                    agent.second->timeout()
-                };
+                // Передаем ссылку на указатель обработчика агента
+                return agent.second.agent;
             }
         }
 
@@ -71,8 +70,8 @@ namespace core {
 
         for (auto& agent: _agents_list) {
             metrics.insert(metrics.end(),
-                agent.second.get()->metrics().begin(),
-                agent.second.get()->metrics().end());
+                agent.second.agent->metrics().begin(),
+                agent.second.agent->metrics().end());
         }
 
         return metrics;
@@ -96,7 +95,7 @@ namespace core {
             throw std::logic_error("Agent \"" + name + "\" not found");
         }
 
-        agent->second->setSleepMode(false);
+        agent->second.agent->setSleepMode(false);
     }
 
     void AgentService::disable(const std::string &name) noexcept {
@@ -106,7 +105,7 @@ namespace core {
             throw std::logic_error("Agent \"" + name + "\" not found");
         }
 
-        agent->second->setSleepMode(true);
+        agent->second.agent->setSleepMode(true);
     }
 
 }

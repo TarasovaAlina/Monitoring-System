@@ -12,7 +12,6 @@
 #include "agent/agent.h"
 #include "core/agent_handler.h"
 #include <unordered_map>
-#include <map>
 #include <thread>
 
 namespace core {
@@ -33,6 +32,16 @@ namespace core {
      * @brief Управляет всеми агентами в программе
      */
     class AgentService {
+        /**
+         * @struct AgentCore
+         * @brief Описывает рабочее состояние агента
+         */
+        struct AgentCore {
+            std::unique_ptr<AgentHandler> agent; ///< Управление работой агента
+            std::thread agent_work_thread; ///< Поток, в котором происходит считывание метрик
+            std::vector<MetricConfig> critical_metrics_values; ///< Критические значения метрик
+        };
+
     public:
         ~AgentService() noexcept;
         /**
@@ -44,11 +53,11 @@ namespace core {
         void update(const std::vector<ConfigInfo>& agent_data_list) noexcept;
 
         /**
-         * @brief Передает информацию о конкретном агенте
+         * @brief Передает управление конкретным агентом выше по цепочке вызовов
          * @param name Имя данного агента
-         * @return Подробная информация об агенте, которая будет отображена в UI
+         * @return Обработчик агента с именем name
          */
-        AgentInfo getAgentInfo(const std::string& name);
+        std::unique_ptr<AgentHandler>& getAgent(const std::string& name);
 
         /**
          * @brief Передает собранные метрики от всех активных агентов
@@ -75,17 +84,7 @@ namespace core {
          */
         void disable(const std::string& name) noexcept;
     private:
-        /**
-         * @brief Множество агентов, сохраненных под своими именами
-         * @note Используем unordered_map, так как ожидается большое количество обращений,
-         * поэтому необходим быстрый доступ к ключу
-         */
-        std::unordered_map<std::string, std::unique_ptr<AgentHandler>> _agents_list;
-        /**
-         * @brief Множество потоков, ассоциированных с этими агентами,
-         * в которых работает считывание метрик
-         */
-        std::map<std::string, std::thread> _agent_work_threads_list;
+        std::unordered_map<std::string, AgentCore> _agents_list; ///< Агенты, которые работают в данный момент
     };
 }
 
