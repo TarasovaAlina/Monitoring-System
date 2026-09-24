@@ -8,7 +8,6 @@
  * @author Kovalev Georgiy
  */
 
-#include <set>
 #include <string>
 #include <vector>
 #include <map>
@@ -30,15 +29,8 @@ namespace agent {
      */
     class IMetricsCollector {
     public:
-        virtual std::vector<Metric> update() noexcept = 0;
+        virtual std::vector<Metric> update(const std::vector<std::string>& metric_names_list) noexcept = 0;
         virtual ~IMetricsCollector() = default;
-
-        std::set<std::string>& usingMetrics() noexcept {
-            return _using_metrics;
-        }
-
-    protected:
-        std::set<std::string> _using_metrics; ///< Хранит информацию о том, какие метрики собирает агент
     };
 
     /**
@@ -56,8 +48,9 @@ namespace agent {
          *
          * Количество процессов в системе равно количеству файлов в @code /proc/<PID>@endcode,
          * где <PID> - целочисленное положительное значение
+         * @param metric_names_list Список метрик, которые сборщик должен считать
          */
-        std::vector<Metric> update() noexcept override;
+        std::vector<Metric> update(const std::vector<std::string>& metric_names_list) noexcept override;
 
     private:
         /**
@@ -103,9 +96,9 @@ namespace agent {
          *
          * В свою очередь, пропускная способность связана с IOPS через размер блока:
          * @code hard_throughput = hard_ops * block_size @endcode
-         *
+         * @param metric_names_list Список метрик, которые сборщик должен считать
          */
-        std::vector<Metric> update() noexcept override;
+        std::vector<Metric> update(const std::vector<std::string>& metric_names_list) noexcept override;
 
     private:
         /**
@@ -141,8 +134,9 @@ namespace agent {
          * Для этого через определенный промежуток времени считываются значения байтов.
          * Пропускная способность рассчитывается по формуле:\n
          * @code throughput = ((receive_bytes2 - receive_bytes1) + (transmit_bytes2 - transmit_bytes1)) / det_time @endcode
+         * @param metric_names_list Список метрик, которые сборщик должен считать
          */
-        std::vector<Metric> update() noexcept override;
+        std::vector<Metric> update(const std::vector<std::string>& metric_names_list) noexcept override;
 
         /**
          * @brief Добавляет новый url для отслеживания его доступности

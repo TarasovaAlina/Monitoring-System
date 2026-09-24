@@ -13,7 +13,7 @@ namespace agent {
         }
     }
 
-    const std::vector<Metric> Agent::updateMetrics() const noexcept {
-        return _metrics_collector->update();
+    const std::vector<Metric> Agent::updateMetrics(const std::vector<std::string>& metric_names_list) const noexcept {
+        return _metrics_collector->update(metric_names_list);
     }
 }

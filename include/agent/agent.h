@@ -34,7 +34,7 @@ namespace agent {
     class IAgent {
     public:
         virtual ~IAgent() noexcept = default;
-        virtual const std::vector<Metric> updateMetrics() const noexcept = 0;
+        virtual const std::vector<Metric> updateMetrics(const std::vector<std::string>&) const noexcept = 0;
     };
 
     /**
@@ -50,10 +50,11 @@ namespace agent {
         explicit Agent(AgentType type) noexcept;
 
         /**
-         * @brief Подгрузка актуальных значений метрик, собираемые этим агентом-библиотекой
-         * @return Список актуальных данных
+         * @brief Получение текущих значений конкретных метрик, собираемых этим агентом-библиотекой.
+         * @param metric_names_list Список метрик, которые необходимо собрать коллектору
+         * @return Список актуальных значений метрик
          */
-        const std::vector<Metric> updateMetrics() const noexcept override;
+        const std::vector<Metric> updateMetrics(const std::vector<std::string>& metric_names_list) const noexcept;
 
     private:
         std::unique_ptr<IMetricsCollector> _metrics_collector; ///< Сборщик метрик, который имплементирует в себе логику получения данных
