@@ -73,6 +73,15 @@ namespace core {
         std::vector<std::string> agentsNamesList() const noexcept;
 
         /**
+         * @brief Изменяет имя загруженного в систему агента
+         * @param name Текущее имя агента
+         * @param new_name Новое имя агента
+         */
+        void changeName(const std::string& name, const std::string& new_name) noexcept;
+
+        std::vector<MetricConfig>& criticalMetricValues(const std::string& name) noexcept;
+
+        /**
          * @brief Включает конкретный агент (делает его активным)
          * @param name Имя этого агента
          */

@@ -88,6 +88,16 @@ namespace core {
         return names;
     }
 
+    void AgentService::changeName(const std::string &name, const std::string &new_name) noexcept {
+        // Извлекаем узел без лишних копирований
+        auto node = _agents_list.extract(name);
+
+        // Изменяем ключ и вставляем обратно
+        // Проверка на то, что элемента с новым ключом не существует, проводится на стороне клиента
+        node.key() = new_name;
+        _agents_list.insert(std::move(node));
+    }
+
     void AgentService::enable(const std::string &name) noexcept {
         auto agent = _agents_list.find(name);
 
