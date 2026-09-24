@@ -1,7 +1,7 @@
 #ifndef SYSTEM_MONITORING_KERNEL_H
 #define SYSTEM_MONITORING_KERNEL_H
 
-#include "core/kernel_manager.h"
+#include "agent_service.h"
 #include "tools/logger.h"
 #include <memory>
 #include <thread>
@@ -12,6 +12,8 @@
  * @date 13.09.2026
  * @authors Tarasova Alina, Georgiy Kovalev
  */
+
+#define SCAN_TIMEOUT 5000
 
 /**
  * @namespace core
@@ -144,7 +146,8 @@ namespace core {
          */
         void _searchNewAgents() noexcept;
 
-        std::unique_ptr<KernelManager> _kernel_manager; ///< Отвечает за всю работу с агентами
+        std::unique_ptr<AgentService> _agent_service; ///< Управляет агентами, загруженными как динамические библиотеки
+        std::unique_ptr<ConfigService> _config_service; ///< Считывает конфиги агентов и передает внутренние данные
         std::unique_ptr<tools::Logger> _logger; ///< Отвечает за запись данных в журнал
 
         std::thread _search_agents_thread; ///< Хранит поток, в котором происходит поиск агентов в директории ./agents
