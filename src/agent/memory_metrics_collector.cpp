@@ -6,7 +6,7 @@
 #include <sys/statvfs.h>
 
 namespace agent {
-    std::vector<Metric> MemoryMetricsCollector::update() noexcept {
+    std::vector<Metric> MemoryMetricsCollector::update(const std::vector<std::string>& metric_names_list) noexcept {
         std::pair<unsigned long, unsigned long> ram_metrics = _readRAMStat();
 
         // Сохраняем статистику использования ОЗУ
@@ -40,13 +40,30 @@ namespace agent {
         auto hard_ops = (det_reads + det_writes) * 10;
         auto hard_throughput = hard_ops * 512;
 
-        return {
-            Metric("ram_total", ram_total),
-            Metric("ram", ram),
-            Metric("hard_volume", hard_volume),
-            Metric("hard_ops", hard_ops),
-            Metric("hard_throughput", hard_throughput)
-        };
+        std::vector<Metric> result_metrics;
+        result_metrics.reserve(metric_names_list.size());
+        // Добавляем только те метрики, которые указаны пользователем
+        if (std::ranges::find(metric_names_list.begin(), metric_names_list.end(), "ram_total") != metric_names_list.end()) {
+            result_metrics.emplace_back(Metric("ram_total", ram_total));
+        }
+
+        if (std::ranges::find(metric_names_list.begin(), metric_names_list.end(), "ram") != metric_names_list.end()) {
+            result_metrics.emplace_back(Metric("ram", ram));
+        }
+
+        if (std::ranges::find(metric_names_list.begin(), metric_names_list.end(), "hard_volume") != metric_names_list.end()) {
+            result_metrics.emplace_back(Metric("hard_volume", hard_volume));
+        }
+
+        if (std::ranges::find(metric_names_list.begin(), metric_names_list.end(), "hard_ops") != metric_names_list.end()) {
+            result_metrics.emplace_back(Metric("hard_ops", hard_ops));
+        }
+
+        if (std::ranges::find(metric_names_list.begin(), metric_names_list.end(), "hard_throughput") != metric_names_list.end()) {
+            result_metrics.emplace_back(Metric("hard_throughput", hard_throughput));
+        }
+
+        return result_metrics;
     }
 
     std::pair<unsigned long, unsigned long> MemoryMetricsCollector::_readPartitionDiskStat(const std::string &disk_name) noexcept {

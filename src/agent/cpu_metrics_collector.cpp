@@ -5,18 +5,26 @@
 #include <thread>
 
 namespace agent {
-    std::vector<Metric> CPUMetricsCollector::update() noexcept {
-        auto stat1 = _readCPUStats();
-        std::this_thread::sleep_for(std::chrono::microseconds(500));
-        auto stat2 = _readCPUStats();
+    std::vector<Metric> CPUMetricsCollector::update(const std::vector<std::string>& metric_names_list) noexcept {
+        std::vector<Metric> metrics{};
+        metrics.reserve(metric_names_list.size());
 
-        // Обновляем статистику
-        auto cpu = 1.0 - static_cast<double>(stat2.first - stat1.first) / (stat2.second - stat1.second);
-        auto processes = _readCountProcesses();
+        for (const auto& name : metric_names_list) {
+            if (name == "cpu") {
+                auto stat1 = _readCPUStats();
+                std::this_thread::sleep_for(std::chrono::microseconds(500));
+                auto stat2 = _readCPUStats();
 
-        return {
-            Metric("cpu", cpu),
-            Metric("processes", processes)};
+                double cpu = 1.0 - static_cast<double>(stat2.first - stat1.first) / (stat2.second - stat1.second);
+                metrics.emplace_back(Metric{name, cpu});
+            }
+
+            else if (name == "processes") {
+                metrics.emplace_back(Metric{name, static_cast<double>(_readCountProcesses())});
+            }
+        }
+
+        return metrics;
     }
 
     int CPUMetricsCollector::_readCountProcesses() noexcept {
