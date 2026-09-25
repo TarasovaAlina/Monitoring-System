@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <thread>
+#include <cpr/cpr.h>
 
 namespace agent {
     std::vector<Metric> NetworkMetricsCollector::update(const std::vector<std::string>& metric_names_list) noexcept {
@@ -29,9 +30,11 @@ namespace agent {
 
                 result.emplace_back(Metric("inet_throughput", throughputs / count));
             }
-        }
 
-        // Позже добавить проверку на доступность списка url
+            else {
+                result.emplace_back(Metric(name, _isUrlAvailable(name)));
+            }
+        }
 
         return result;
     }
@@ -63,5 +66,15 @@ namespace agent {
         }
 
         return result;
+    }
+
+    bool NetworkMetricsCollector::_isUrlAvailable(const std::string &url) noexcept {
+        cpr::Response response = cpr::Head(
+            cpr::Url{url},
+            cpr::Timeout{timeout_ms},
+            cpr::Redirect{true});
+
+        // Считаем сайт доступным, если статус ответа в диапазоне 200-399
+        return response.status_code >= 200 && response.status_code < 400;
     }
 }

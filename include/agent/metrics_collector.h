@@ -138,13 +138,14 @@ namespace agent {
          */
         std::vector<Metric> update(const std::vector<std::string>& metric_names_list) noexcept override;
 
-        /**
-         * @brief Добавляет новый url для отслеживания его доступности
-         * @param url Адрес сайта, который указан в конфиге
-         */
-        void addURL(const std::string& url) noexcept;
-
     private:
+        /**
+         * @brief Посылает HEAD-запрос к серверу
+         * @param url Адрес сервера
+         * @return true, если сайт доступен, иначе false
+         */
+        static bool _isUrlAvailable(const std::string& url) noexcept;
+
         /**
          * @brief Считывает 2-е и 10-е поля из файла @code/proc/net/dev@endcode для каждого сетевого интерфейса
          * @return Пара <считанные_байты; отправленные_байты> для каждого сетевого интерфейса, доступного в системе
