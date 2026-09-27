@@ -1,6 +1,7 @@
 # смотрим, чтобы были установлены необходимые пакеты
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(CURL QUIET)
+find_package(nlohmann_json QUIET)
 
 #if(NOT CURL_FOUND)
 #    message(STATUS "Библиотека curl не установлена в системе, установка...")
@@ -16,6 +17,20 @@ find_package(CURL QUIET)
 #
 #    FetchContent_MakeAvailable(curl)
 #endif()
+
+# if(NOT nlohmann_json_FOUND)
+#     message(STATUS "Библиотека nlohmann/json не установлена в системе, установка...")
+
+#     include(FetchContent)
+
+#     FetchContent_Declare(
+#         nlohmann_json
+#         GIT_REPOSITORY https://github.com/nlohmann/json.git
+#         GIT_TAG v3.12.0
+#     )
+
+#     FetchContent_MakeAvailable(nlohmann_json)
+# endif()
 
 file(GLOB cpu_monitoring_agent_src_files "agent/cpu/*.cpp")
 file(GLOB memory_monitoring_agent_src_files "agent/memory/*.cpp")
@@ -34,4 +49,4 @@ add_executable(SystemMonitoring
         ${gui_files}
         ${core_src_files}
 )
-target_link_libraries(SystemMonitoring PRIVATE Qt6::Widgets)
+target_link_libraries(SystemMonitoring PRIVATE Qt6::Widgets nlohmann_json::nlohmann_json)

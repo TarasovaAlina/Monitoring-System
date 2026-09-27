@@ -17,7 +17,7 @@ namespace core {
     void Kernel::_searchNewAgents() noexcept {
         // Происходит поиск до тех пор, пока нет сигнала завершения
         while (_work_flag.load()) {
-
+            _kernel_manager->scan();
         }
     }
 
