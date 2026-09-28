@@ -8,44 +8,76 @@
 #include <QVector>
 #include <memory>
 
-QT_BEGIN_NAMESPACE
-class QTimer;
-QT_END_NAMESPACE
-
-// ---------------------------------------------------------------------------
-// MainWindow
-//
-// Управление приложением: владеет ядром (core::Kernel), таймером опроса
-// метрик, хранит индекс текущего выбранного агента и переводит данные между
-// Kernel и UIWindow. Сами виджеты и разметка живут в UIWindow - здесь их нет.
-// ---------------------------------------------------------------------------
-
 namespace gui {
+    /**
+     * @class MainWindow
+     * @brief Управление приложением: владеет ядром (core::Kernel), таймером опроса метрик,
+     * хранит индекс текущего выбранного агента и переводит данные между классами Kernel и UIWindow.
+     * Сами виджеты и разметка живут в UIWindow - здесь их нет.
+     * Данные метрик берутся из текущего файла логов и отображаются на экране
+     */
     class MainWindow : public QMainWindow {
         Q_OBJECT
 
     public:
+        /**
+         * @brief Создание окна приложения:
+         * 1. Создание ядра приложения
+         * 2. Создание UI
+         * 3. Соединение сигналов от UI со слотами этого класса
+         * 4. Создание таймера, который осуществляет периодическое чтение файла логов и отображение на экране
+         */
         explicit MainWindow(QWidget* parent = nullptr);
         ~MainWindow() override = default;
 
     private slots:
+        /**
+         * @brief Реакция на переключение пользователем вкладки с агентами
+         * @param index Индекс агента, который выбрал пользователь
+         */
         void onAgentSelected(int index);
+
+        /**
+         * @brief Реакция на включение/выключение тумблера активности агента,
+         * чья информация показана на вкладке
+         * @param enabled true - агент должен быть активен, false - переключиться в режим сна
+         */
         void onAgentEnabledChanged(bool enabled);
+
+        /**
+         * @brief Не знаю, думаю надо убрать и заменить на отдельные методы,
+         * которые изменяют коннкретные настройки агента
+         */
         void onApplyRequested(int updateIntervalMs, QVector<core::MetricConfig> criticalValues);
+
+        /**
+         * @brief Думаю будет лишним, надо убрать
+         */
         void onRefreshTimerTick();
 
     private:
+        /**
+         * @brief Обновляет вкладку с агентами, запрашивая у _kernel актуальный список агентов
+         */
         void reloadAgentList();
-        void pushCurrentAgentToUi();
+
+        /**
+         * @brief Отображает на во вкладке агента его текущие настроки
+         */
+        void pushCurrentAgentToUI();
+
+        /**
+         * @return Имя агента, чья вкладка с настройками активна в данный момент
+         */
         QString currentAgentName() const;
 
-        std::unique_ptr<core::Kernel> _kernel;
-        UIWindow* _ui;
+        std::unique_ptr<core::Kernel> _kernel; ///< Ядро программы, которое управляет внутренней логикой
+        UIWindow* _ui; ///< Интерфейс программы, который занимается отображением текущей информации
 
-        QStringList _agentNames;
-        int _currentAgentIndex = 0;
+        QStringList _agentNames; ///< Список имен агентов, которые работают в ядре
+        int _currentAgentIndex = 0; ///< Индекс агента в списке, который открыт во вкладке настроек агентов
 
-        QTimer* _refreshTimer = nullptr;
+        QTimer* _refreshTimer; ///< Возможно убрать
     };
 }
 
