@@ -8,7 +8,7 @@
 
 /**
  * @file kernel.h
- * @brief В этом файле описан класс Kernel
+ * @brief В этом файле описан класс Kernel и структура AgentInfo
  * @date 13.09.2026
  * @authors Tarasova Alina, Georgiy Kovalev
  */
@@ -20,6 +20,18 @@
  * @brief В этом пространстве имен описаны основные классы, которые управляют программой
  */
 namespace core {
+
+    /**
+     * @struct AgentInfo
+     * @brief Содержит подробную информацию об агенте
+     */
+    struct AgentInfo {
+        agent::AgentType type; ///< Тип агента
+        std::vector<std::string> metrics; ///< Список поддерживаемых метрик
+        long elapsed_time_ms; ///< Время, прошедшее с момента создания агента (мс)
+        long refresh_time_ms; ///< Таймаут изменения метрик (мс)
+        bool is_active; ///< Активен ли агент (выводятся ли его метрики на экран)
+    };
 
     /**
      * @class Kernel

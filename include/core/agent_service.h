@@ -17,18 +17,6 @@
 namespace core {
 
     /**
-     * @struct AgentInfo
-     * @brief Содержит подробную информацию об агенте
-     */
-    struct AgentInfo {
-        agent::AgentType type; ///< Тип агента
-        std::vector<std::string> metrics; ///< Список поддерживаемых метрик
-        long elapsed_time_ms; ///< Время, прошедшее с момента создания агента (мс)
-        long refresh_time_ms; ///< Таймаут изменения метрик (мс)
-        bool is_active; ///< Активен ли агент (выводятся ли его метрики на экран)
-    };
-
-    /**
      * @class AgentService
      * @brief Управляет всеми агентами в программе
      */
