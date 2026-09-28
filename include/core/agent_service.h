@@ -23,8 +23,9 @@ namespace core {
     struct AgentInfo {
         agent::AgentType type; ///< Тип агента
         std::vector<std::string> metrics; ///< Список поддерживаемых метрик
-        std::chrono::milliseconds elapsed_time; ///< Время, прошедшее с момента создания агента
-        std::chrono::milliseconds refresh_time; ///< Таймаут изменения метрик
+        long elapsed_time_ms; ///< Время, прошедшее с момента создания агента (мс)
+        long refresh_time_ms; ///< Таймаут изменения метрик (мс)
+        bool is_active; ///< Активен ли агент (выводятся ли его метрики на экран)
     };
 
     /**
