@@ -67,7 +67,7 @@ namespace core {
         return _type;
     }
 
-    std::chrono::milliseconds &AgentHandler::timeout() noexcept {
+    long &AgentHandler::timeout() noexcept {
         return _timeout;
     }
 
@@ -75,14 +75,18 @@ namespace core {
         return _metrics;
     }
 
-    std::chrono::milliseconds AgentHandler::timeElapsedSinceStart() const noexcept {
+    long AgentHandler::timeElapsedSinceStart() const noexcept {
         // Вычисляем, сколько времени прошло с создания агента
         auto end_time = std::chrono::steady_clock::now();
 
-        return std::chrono::duration_cast<std::chrono::milliseconds>(end_time - _start_time);
+        return std::chrono::duration_cast<std::chrono::milliseconds>(end_time - _start_time).count();
     }
 
     std::vector<std::string> &AgentHandler::metricNamesList() noexcept {
         return _metric_names_list;
+    }
+
+    bool AgentHandler::isActive() const noexcept {
+        return _sleeping.load();
     }
 }

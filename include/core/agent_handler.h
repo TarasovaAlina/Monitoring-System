@@ -34,10 +34,11 @@ namespace core {
         void unload() noexcept; ///< Выгружает библиотеку
 
         agent::AgentType type() const noexcept; ///< Доступ к приватному полю _type
-        std::chrono::milliseconds& timeout() noexcept; ///< Доступ к приватному полю _timeout
+        long& timeout() noexcept; ///< Доступ к приватному полю _timeout
         std::vector<agent::Metric>& metrics() noexcept; ///< Доступ к текущим параметрам метрик
-        std::chrono::milliseconds timeElapsedSinceStart() const noexcept;
+        long timeElapsedSinceStart() const noexcept; ///< Время в мс, прошедшее с создания этого агента
         std::vector<std::string>& metricNamesList() noexcept; ///< Доступ к списку метрик, значения которых агент должен обновлять
+        bool isActive() const noexcept; ///< Доступ к приватному атомарному флагу _sleeping
 
     private:
         void* _shared_lib; ///< Загруженная динамическая библиотека агента
@@ -50,7 +51,7 @@ namespace core {
         std::vector<agent::Metric> _metrics; ///< Текущие значения метрик
         std::vector<std::string> _metric_names_list;
         agent::AgentType _type; ///< Тип агента
-        std::chrono::milliseconds _timeout; ///< Таймаут обновления
+        long _timeout; ///< Таймаут обновления
         std::chrono::steady_clock::time_point _start_time; ///< Время создания агента
     };
 }
