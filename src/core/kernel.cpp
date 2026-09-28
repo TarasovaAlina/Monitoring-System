@@ -31,7 +31,8 @@ namespace core {
             agent->type(),
             agent->metricNamesList(),
             agent->timeElapsedSinceStart(),
-            agent->timeout()
+            agent->timeout(),
+            agent->isActive()
         };
     }
 
@@ -57,8 +58,8 @@ namespace core {
         _agent_service->getAgent(name)->metricNamesList() = metric_names_list;
     }
 
-    void Kernel::changeAgentSetting(const std::string &name, int new_timeout) noexcept {
-        _agent_service->getAgent(name)->timeout() = std::chrono::milliseconds(new_timeout);
+    void Kernel::changeAgentSetting(const std::string &name, long new_timeout) noexcept {
+        _agent_service->getAgent(name)->timeout() = new_timeout;
     }
 
     void Kernel::disconnectionAgent(const std::string &name) noexcept {

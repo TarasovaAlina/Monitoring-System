@@ -98,7 +98,7 @@ namespace core {
          * @param name Имя конкретного агента
          * @param new_timeout Новое время
          */
-        void changeAgentSetting(const std::string& name, int new_timeout) noexcept;
+        void changeAgentSetting(const std::string& name, long new_timeout) noexcept;
 
         /**
          * @brief Отключает выбранный в списке активный агент.
