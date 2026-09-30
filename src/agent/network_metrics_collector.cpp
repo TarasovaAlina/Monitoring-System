@@ -71,7 +71,7 @@ namespace agent {
     bool NetworkMetricsCollector::_isUrlAvailable(const std::string &url) noexcept {
         cpr::Response response = cpr::Head(
             cpr::Url{url},
-            cpr::Timeout{timeout_ms},
+            cpr::Timeout{200},
             cpr::Redirect{true});
 
         // Считаем сайт доступным, если статус ответа в диапазоне 200-399
