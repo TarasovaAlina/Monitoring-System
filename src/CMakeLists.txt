@@ -1,37 +1,36 @@
 # смотрим, чтобы были установлены необходимые пакеты
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(CURL QUIET)
+find_package(cpr CONFIG QUIET)
 
-#if(NOT CURL_FOUND)
-#    message(STATUS "Библиотека curl не установлена в системе, установка...")
-#
-#    include(FetchContent)
-#
-#    # Настраиваем скачивание
-#    FetchContent_Declare(
-#            curl
-#            GIT_REPOSITORY https://github.com/curl/curl.git
-#            GIT_TAG curl-8_22_0
-#    )
-#
-#    FetchContent_MakeAvailable(curl)
-#endif()
+include(FetchContent)
 
-file(GLOB cpu_monitoring_agent_src_files "agent/cpu/*.cpp")
-file(GLOB memory_monitoring_agent_src_files "agent/memory/*.cpp")
-file(GLOB network_monitoring_agent_src_files "agent/network/*.cpp")
+if(NOT cpr_FOUND)
+    message(STATUS "CPR не найден в системе. Загрузка через FetchContent...")
+
+    set(BUILD_CPR_TESTS OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        cpr
+        GIT_REPOSITORY https://github.com/libcpr/cpr.git
+        GIT_TAG 1.10.5
+    )
+
+    FetchContent_MakeAvailable(cpr)
+endif()
+
+file(GLOB agent_src_files "agent/*.cpp")
 file(GLOB core_src_files "core/*.cpp")
 file(GLOB gui_files "gui/*.cpp" "../include/gui/*.h")
+file(GLOB tools_src_files "tools/*.cpp")
 
-# Динамические библиотеки агентов
-add_library(cpu_monitoring_agent SHARED ${cpu_monitoring_agent_src_files})
-add_library(memory_monitoring_agent SHARED ${memory_monitoring_agent_src_files})
-target_link_libraries(memory_monitoring_agent PRIVATE libcurl)
-target_include_directories(memory_monitoring_agent PRIVATE ${curl_SOURCE_DIR}/include)
-add_library(network_monitoring_agent SHARED ${network_monitoring_agent_src_files})
+# Сборка динамической библиотеки агентов
+add_library(agent SHARED ${agent_src_files})
+target_link_libraries(agent PRIVATE cpr::cpr)
 
 add_executable(SystemMonitoring
+        main.cpp
         ${gui_files}
         ${core_src_files}
+        ${tools_src_files}
 )
 target_link_libraries(SystemMonitoring PRIVATE Qt6::Widgets)
