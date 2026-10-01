@@ -18,10 +18,12 @@ namespace core {
                 _agents_list[config.agentName] = AgentCore {};
 
                 _agents_list[config.agentName].agent =
-                    std::make_unique<AgentHandler>(path_agent, config.agentType, config.updateInterval);
+                    std::make_unique<AgentHandler>(path_agent, config.agentType, config.updateInterval.count());
 
                 // Запускаем агент работать в отдельном потоке
-                _agents_list[config.agentName].agent_work_thread = std::thread(_agents_list[config.agentName].agent->work);
+                _agents_list[config.agentName].agent_work_thread = std::thread(
+                    &AgentHandler::work,
+                    _agents_list[config.agentName].agent.get());
 
                 // Передаем критические значения метрик
                 _agents_list[config.agentName].critical_metrics_values = config.metricConfig;
@@ -98,7 +100,7 @@ namespace core {
         _agents_list.insert(std::move(node));
     }
 
-    void AgentService::enable(const std::string &name) noexcept {
+    void AgentService::enable(const std::string &name) {
         auto agent = _agents_list.find(name);
 
         if (agent == _agents_list.end()) {
@@ -108,7 +110,7 @@ namespace core {
         agent->second.agent->setSleepMode(false);
     }
 
-    void AgentService::disable(const std::string &name) noexcept {
+    void AgentService::disable(const std::string &name) {
         auto agent = _agents_list.find(name);
 
         if (agent == _agents_list.end()) {
