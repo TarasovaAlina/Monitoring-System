@@ -43,7 +43,7 @@ namespace core {
     private:
         void* _shared_lib; ///< Загруженная динамическая библиотека агента
         std::pair<CreateAgentFunc, DestroyAgentFunc> _agent_func; ///< Функции фабрики, которые используются для создания агентов
-        std::unique_ptr<agent::Agent, DestroyAgentFunc> _agent; ///< Агент, загруженный из динамической библиотеки
+        std::unique_ptr<agent::IAgent, DestroyAgentFunc> _agent; ///< Агент, загруженный из динамической библиотеки
 
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна

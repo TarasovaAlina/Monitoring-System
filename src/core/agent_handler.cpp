@@ -7,22 +7,23 @@ namespace core {
     : _running(true)
     , _sleeping(false)
     , _type(type)
-    , _timeout(milliseconds) {
+    , _timeout(milliseconds)
+    , _agent(nullptr, nullptr) {
         _shared_lib = dlopen(path.c_str(), RTLD_LAZY);
 
         if (_shared_lib == nullptr) {
             throw std::runtime_error("Failed to load library: " + path);
         }
 
-        auto createFunc = static_cast<CreateAgentFunc>(dlsym(_shared_lib, "CreateAgent"));
-        auto destroyFunc = static_cast<DestroyAgentFunc>(dlsym(_shared_lib, "DestroyAgent"));
+        auto createFunc = (CreateAgentFunc)dlsym(_shared_lib, "CreateAgent");
+        auto destroyFunc = (DestroyAgentFunc)dlsym(_shared_lib, "DestroyAgent");
 
         if (!createFunc || !destroyFunc) {
             throw std::runtime_error("Failed to load symbols from the library: " + path);
         }
 
         _agent_func = std::make_pair(createFunc, destroyFunc);
-        _agent = std::make_unique<agent::IAgent, DestroyAgentFunc>(createFunc(_type), destroyFunc);
+        _agent = std::unique_ptr<agent::IAgent, DestroyAgentFunc>(createFunc(_type), destroyFunc);
         _start_time = std::chrono::steady_clock::now();
     }
 
@@ -50,12 +51,13 @@ namespace core {
     void AgentHandler::switchType(const agent::AgentType &type) noexcept {
         if (type != _type) {
             _type = type;
-            _agent = std::make_unique<agent::IAgent, DestroyAgentFunc>(_agent_func.first(_type), _agent_func.second);
+            _agent = std::unique_ptr<agent::IAgent, DestroyAgentFunc>(_agent_func.first(_type), _agent_func.second);
         }
     }
 
     void AgentHandler::unload() noexcept {
         if (_shared_lib != nullptr) {
+            _agent.reset();
             dlclose(_shared_lib);
 
             _shared_lib = nullptr;
