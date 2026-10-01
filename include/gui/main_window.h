@@ -32,28 +32,10 @@ namespace gui {
 
     private slots:
         /**
-         * @brief Реакция на переключение пользователем вкладки с агентами
-         * @param index Индекс агента, который выбрал пользователь
+         * @brief Реакция на изменение имени текущего агента
+         * @param new_name Строка, которую ввел пользователь в поле ввода
          */
-        void onAgentSelected(int index);
-
-        /**
-         * @brief Реакция на включение/выключение тумблера активности агента,
-         * чья информация показана на вкладке
-         * @param enabled true - агент должен быть активен, false - переключиться в режим сна
-         */
-        void onAgentEnabledChanged(bool enabled);
-
-        /**
-         * @brief Не знаю, думаю надо убрать и заменить на отдельные методы,
-         * которые изменяют коннкретные настройки агента
-         */
-        void onApplyRequested(int updateIntervalMs, QVector<core::MetricConfig> criticalValues);
-
-        /**
-         * @brief Думаю будет лишним, надо убрать
-         */
-        void onRefreshTimerTick();
+        void onApplyRequested(const QString& new_name, int index, const QList<core::MetricConfig>& critical_metrics_list, long timeout_ms) noexcept;
 
     private:
         /**
@@ -77,7 +59,7 @@ namespace gui {
         QStringList _agentNames; ///< Список имен агентов, которые работают в ядре
         int _currentAgentIndex = 0; ///< Индекс агента в списке, который открыт во вкладке настроек агентов
 
-        QTimer* _refreshTimer; ///< Возможно убрать
+        QList<QList<agent::Metric>> _metrics_list; ///< Список метрик, которые должны быть показаны в UI
     };
 }
 

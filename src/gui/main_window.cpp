@@ -32,10 +32,6 @@ namespace gui {
 
         reloadAgentList();
 
-        _refreshTimer = new QTimer(this);
-        connect(_refreshTimer, &QTimer::timeout, this, &MainWindow::onRefreshTimerTick);
-        _refreshTimer->start(SCAN_TIMEOUT);
-
         _currentAgentIndex = 0;
         _ui->setActiveAgentButton(0);
         pushCurrentAgentToUI();
@@ -82,7 +78,7 @@ namespace gui {
         QVector<agent::Metric> metrics;
         metrics.reserve(static_cast<int>(info.metrics.size()));
         for (const auto& metric : info.metrics) {
-            MetricDisplayData data;
+            MetricConfig data;
 
             data.name = QString::fromStdString(metric.name);
             data.value = metric.value;
@@ -92,13 +88,6 @@ namespace gui {
         }
 
         _ui->showMetrics(metrics);
-    }
-
-    void MainWindow::onRefreshTimerTick() {
-        if (_kernel)
-            _kernel->update();
-
-        pushCurrentAgentToUI();
     }
 
     void MainWindow::onAgentEnabledChanged(bool enabled) {
@@ -115,27 +104,19 @@ namespace gui {
         }
     }
 
-    void MainWindow::onApplyRequested(int updateIntervalMs, QVector<MetricConfigData> criticalValues) {
+    void MainWindow::onApplyRequested(const QString& new_name, int index, const QList<core::MetricConfig>& critical_metrics_list, long timeout_ms) noexcept {
         if (!_kernel || _agentNames.isEmpty())
             return;
 
-        const std::string agentName = currentAgentName().toStdString();
+        const std::string curAgentName = currentAgentName().toStdString();
 
-        // 1) период обновления метрик
-        _kernel->changeAgentSetting(agentName, updateIntervalMs);
+        _kernel->changeAgentSetting(curAgentName, new_name.toStdString());
+        _kernel->changeAgentSetting(curAgentName, timeout_ms);
+        
+        // Позже заменить на вычисление типа через получения значения от выпадающего списка
+        _kernel->changeAgentSetting(curAgentName, static_cast<agent::AgentType>(index));
 
-        // 2) критические значения метрик - по одному MetricConfig на каждую
-        //    метрику, которую отдал UIWindow.
-        std::vector<core::MetricConfig> criticalList;
-        criticalList.reserve(static_cast<std::size_t>(criticalValues.size()));
-        for (const MetricConfigData& item : criticalValues) {
-            core::MetricConfig config;
-            config.metric_name    = item.name.toStdString();
-            config.critical_value = item.criticalValue;
-            criticalList.push_back(config);
-        }
-        _kernel->changeAgentSetting(agentName, criticalList);
-
-        pushCurrentAgentToUI();
+        const std::vector<core::MetricConfig> vec_metrics(critical_metrics_list.constBegin(), critical_metrics_list.constEnd());
+        _kernel->changeAgentSetting(curAgentName, vec_metrics);
     }
 }
