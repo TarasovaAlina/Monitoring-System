@@ -1,5 +1,5 @@
 #include "gui/ui_window.h"
-#include "tools/config_service.h"
+#include "core/config_service.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>

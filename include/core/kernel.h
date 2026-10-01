@@ -3,6 +3,7 @@
 
 #include "agent_service.h"
 #include "tools/logger.h"
+#include "config_service.h"
 #include <memory>
 #include <thread>
 
