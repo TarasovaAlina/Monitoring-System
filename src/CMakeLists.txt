@@ -1,6 +1,7 @@
 # смотрим, чтобы были установлены необходимые пакеты
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(cpr CONFIG QUIET)
+find_package(cpr CONFIG QUIET) # Для работы NetworkCollector
+find_package(nlohmann_json QUIET) # Для работы ConfigService (сохранение конфигов в json формате)
 
 include(FetchContent)
 
@@ -18,6 +19,21 @@ if(NOT cpr_FOUND)
     FetchContent_MakeAvailable(cpr)
 endif()
 
+if(NOT nlohmann_json_FOUND)
+    message(STATUS "Установка библиотеки для работы с json-форматом")
+
+    include(FetchContent)
+
+    FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.12.0
+    )
+    
+    FetchContent_MakeAvailable(nlohmann_json)
+
+endif()
+
 file(GLOB agent_src_files "agent/*.cpp")
 file(GLOB core_src_files "core/*.cpp")
 file(GLOB gui_files "gui/*.cpp" "../include/gui/*.h")
@@ -33,4 +49,4 @@ add_executable(SystemMonitoring
         ${core_src_files}
         ${tools_src_files}
 )
-target_link_libraries(SystemMonitoring PRIVATE Qt6::Widgets)
+target_link_libraries(SystemMonitoring PRIVATE Qt6::Widgets nlohmann_json::nlohmann_json)
