@@ -2,7 +2,7 @@
 #include <chrono>
 
 namespace tools {
-    Logger::Logger() noexcept {
+    Logger::Logger() {
         auto time = std::chrono::system_clock::now();
         std::time_t now_date = std::chrono::system_clock::to_time_t(time);
 
@@ -11,7 +11,7 @@ namespace tools {
 
         std::string name = ss.str() + ".log";
 
-        _file.open(name, std::ios::app);
+        _file.open(name, std::ios::app | std::ios::ate);
 
         if (!_file.is_open()) {
             throw std::runtime_error("The file cannot be opened");
@@ -38,8 +38,9 @@ namespace tools {
         std::time_t now_date = std::chrono::system_clock::to_time_t(time);
 
         // Сначала добавляем временную метку
+        stream_line << "[";
         stream_line << std::put_time(std::localtime(&now_date), "%y.%m.%d %H:%M:%S");
-        stream_line << " |";
+        stream_line << "] |";
 
         for (const auto&[name, value] : metrics) {
             // Добавляем имя метрики
