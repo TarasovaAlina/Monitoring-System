@@ -43,10 +43,13 @@ file(GLOB tools_src_files "tools/*.cpp")
 add_library(agent SHARED ${agent_src_files})
 target_link_libraries(agent PRIVATE cpr::cpr)
 
+add_library(backend STATIC ${core_src_files} ${tools_src_files})
+target_link_libraries(backend PUBLIC nlohmann_json::nlohmann_json)
+
 add_executable(SystemMonitoring
         main.cpp
         ${gui_files}
-        ${core_src_files}
-        ${tools_src_files}
 )
-target_link_libraries(SystemMonitoring PRIVATE Qt6::Widgets nlohmann_json::nlohmann_json)
+target_link_libraries(SystemMonitoring PRIVATE
+        backend
+        Qt6::Widgets)
