@@ -3,9 +3,11 @@
 
 #include "gui/ui_window.h"
 #include "core/kernel.h"
+#include "tools/log_reader.h"
+#include "worker.h"
 #include <QMainWindow>
 #include <QStringList>
-#include <QVector>
+#include <QThread>
 #include <memory>
 
 namespace gui {
@@ -27,7 +29,7 @@ namespace gui {
          * 3. Соединение сигналов от UI со слотами этого класса
          */
         explicit MainWindow(QWidget* parent = nullptr);
-        ~MainWindow() override = default;
+        ~MainWindow() override;
 
     private slots:
         /**
@@ -53,7 +55,12 @@ namespace gui {
         /**
          * @brief Обновляет вкладку с агентами, запрашивая у _kernel актуальный список агентов
          */
-        void reloadAgentList();
+        void reloadAgentList() noexcept;
+
+        /**
+         * @brief Запускает ожидание, когда в файл с логами запишется новая информация
+         */
+        void updatingLogs(const std::vector<agent::Metric>& metricsList) noexcept;
 
         /**
          * @brief Отображает на во вкладке агента его текущие настроки
@@ -67,6 +74,10 @@ namespace gui {
 
         std::unique_ptr<core::Kernel> _kernel; ///< Ядро программы, которое управляет внутренней логикой
         UIWindow* _ui; ///< Интерфейс программы, который занимается отображением текущей информации
+
+        Worker* _worker; ///< Обработчик класса LogReader, который имплементирован внутрь MainWindow
+        QThread* _log_reader_thread; ///< Поток, в котором происходит обработка LogReader класса
+        QAtomicInt _is_running; ///< Атомарная переменная, показывающая, работает ли приложение в данный момент времени
 
         QStringList _agentNames; ///< Список имен агентов, которые работают в ядре
         int _currentAgentIndex = 0; ///< Индекс агента в списке, который открыт во вкладке настроек агентов

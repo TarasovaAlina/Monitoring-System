@@ -1,18 +1,14 @@
 #include "gui/main_window.h"
 #include "core/kernel.h"
+#include "tools/log_reader.h"
 #include <QMessageBox>
 #include <QTimer>
 
-// ---------------------------------------------------------------------------
-// ВНИМАНИЕ. В присланном kernel.h нет содержимого agent_service.h, где
-// объявлены AgentInfo, MetricConfig и agent::AgentType. Здесь по-прежнему
-// предполагаются поля AgentInfo.name/is_active/update_timeout/metrics и
-// MetricConfig.metric_name/critical_value (см. pushCurrentAgentToUI() и
-// onApplyRequested()). Пришлите agent_service.h - поправлю точные имена.
-// ---------------------------------------------------------------------------
-
 namespace gui {
-    MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+    MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent)
+    , _log_reader_thread(new QThread(this))
+    , _is_running(1) {
         setWindowTitle(QStringLiteral("Системный монитор"));
         resize(900, 520);
 
@@ -35,6 +31,19 @@ namespace gui {
         _currentAgentIndex = 0;
         _ui->setActiveAgentButton(0);
         pushCurrentAgentToUI();
+
+        _worker = new Worker();
+        _worker->moveToThread(_log_reader_thread);
+
+        connect(_worker, &Worker::updateMetricsList, this, &MainWindow::updatingLogs);
+        connect(_log_reader_thread, &QThread::finished, _worker, &QObject::deleteLater);
+
+        _log_reader_thread->start();
+    }
+
+    MainWindow::~MainWindow() {
+        _log_reader_thread->quit();
+        _log_reader_thread->wait();
     }
 
     void MainWindow::reloadAgentList() {
