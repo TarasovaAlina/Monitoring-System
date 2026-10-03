@@ -68,6 +68,10 @@ namespace core {
          */
         void changeName(const std::string& name, const std::string& new_name) noexcept;
 
+        /**
+         * @brief Передает информацию о критических значениях метрик, которые собирает агент
+         * @param name Имя агента, у которого берется информация
+         */
         std::vector<MetricConfig>& criticalMetricValues(const std::string& name) noexcept;
 
         /**

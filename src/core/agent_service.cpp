@@ -100,6 +100,10 @@ namespace core {
         _agents_list.insert(std::move(node));
     }
 
+    std::vector<MetricConfig> &AgentService::criticalMetricValues(const std::string &name) noexcept {
+        return _agents_list[name].critical_metrics_values;
+    }
+
     void AgentService::enable(const std::string &name) {
         auto agent = _agents_list.find(name);
 
