@@ -22,9 +22,6 @@ namespace gui {
         // Левая колонка
         layout_leftColumnLayout = new QVBoxLayout();
 
-        buildAgentBar();
-        layout_leftColumnLayout->addWidget(widget_agentBar, 0);
-
         buildMetricsPanel();
         layout_leftColumnLayout->addWidget(box_metricsPanelGroup, 1);
 
@@ -33,18 +30,6 @@ namespace gui {
         // Правая колонка
         buildSettingsPanel();
         layout_rootLayout->addWidget(box_settingsGroup, 1);
-    }
-
-    void UIWindow::buildAgentBar() {
-        widget_agentBar = new QWidget(this);
-        layout_agentBarLayout = new QHBoxLayout(widget_agentBar);
-        layout_agentBarLayout->setContentsMargins(0, 0, 0, 0);
-        layout_agentBarLayout->setSpacing(0);
-
-        group_agentButtons = new QButtonGroup(this);
-        group_agentButtons->setExclusive(true);
-
-        connect(group_agentButtons, &QButtonGroup::idClicked, this, &UIWindow::agentSelected);
     }
 
     void UIWindow::setAgentNames(const QStringList& names) {
@@ -316,8 +301,6 @@ namespace gui {
                 const QSignalBlocker blocker(row.criticalSpin);
                 row.criticalSpin->setValue(metric.value);
             }
-
-            applyThresholdColor(row.bar, metric.value, metric.criticalValue);
         }
     }
 
@@ -362,22 +345,6 @@ namespace gui {
             layout_metricsLayout->insertWidget(layout_metricsLayout->count() - 1, frame);
 
             vector_metricRows.append({ frame, nameLabel, bar, valueLabel, criticalSpin });
-        }
-    }
-
-    void UIWindow::applyThresholdColor(QProgressBar* bar, double value, double criticalValue) const {
-        if (criticalValue <= 0.0) {
-            bar->setStyleSheet(QString()); // критическое значение не задано
-            return;
-        }
-
-        const double ratio = value / criticalValue;
-        if (ratio >= 1.0) {
-            bar->setStyleSheet("QProgressBar::chunk { background-color: #d9534f; }"); // красный
-        } else if (ratio >= 0.75) {
-            bar->setStyleSheet("QProgressBar::chunk { background-color: #f0ad4e; }"); // жёлтый
-        } else {
-            bar->setStyleSheet("QProgressBar::chunk { background-color: #5cb85c; }"); // зелёный
         }
     }
 }

@@ -63,11 +63,9 @@ namespace gui {
         void onAgentSelectorChanged(int index) noexcept;
 
     private:
-        void buildAgentBar();
         void buildMetricsPanel();
         void buildSettingsPanel();
         void rebuildMetricRows(int metricCount);
-        void applyThresholdColor(QProgressBar* bar, double value, double criticalValue) const;
 
         struct MetricRow {
             QFrame* frame;
@@ -89,8 +87,6 @@ namespace gui {
             QComboBox* conditionCombo;
             QDoubleSpinBox* valueSpin;
         };
-
-        QWidget* widget_agentBar;
 
         QHBoxLayout* layout_rootLayout;
         QVBoxLayout* layout_leftColumnLayout;
