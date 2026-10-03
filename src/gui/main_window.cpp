@@ -29,7 +29,7 @@ namespace gui {
         reloadAgentList();
 
         _currentAgentIndex = 0;
-        _ui->setActiveAgentButton(0);
+        _ui->setActiveAgentIndex(0);
         pushCurrentAgentToUI();
 
         _worker = new Worker();

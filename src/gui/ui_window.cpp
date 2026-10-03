@@ -61,7 +61,7 @@ namespace gui {
         combo_agentSelector->addItems(names);
     }
 
-    void UIWindow::setActiveAgentButton(int index) {
+    void UIWindow::setActiveAgentIndex(int index) {
         if (auto* button = group_agentButtons->button(index)) {
             button->setChecked(true);
         }
@@ -74,7 +74,16 @@ namespace gui {
         box_metricsPanelGroup = new QGroupBox(QStringLiteral("Вывод метрик на экран"), this);
 
         layout_metricsLayout = new QVBoxLayout(box_metricsPanelGroup);
-        layout_metricsLayout->addStretch(1);
+        layout_metricsLayout->setAlignment(Qt::AlignTop);
+        layout_metricsLayout->setContentsMargins(5, 15, 5, 5);
+
+        // Инициализируем пустой контейнер
+        widget_metricsContainer = new QWidget(box_metricsPanelGroup);
+        layout_metricsContainer = new QVBoxLayout(widget_metricsContainer);
+        layout_metricsContainer->setContentsMargins(0, 0, 0, 0);
+
+        layout_metricsLayout->addWidget(widget_metricsContainer);
+        layout_metricsLayout->addStretch(1); // Пружина, прижимающая контейнер к верху
     }
 
     void UIWindow::buildSettingsPanel() {
@@ -144,6 +153,55 @@ namespace gui {
         // Добавляем контейнер в основной слой панели настроек
         layout_outerLayout->addWidget(widget_settingsDetails);
         layout_outerLayout->addStretch(1);
+    }
+
+    void UIWindow::rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics) {
+        // Удаляем старый контейнер со всеми внутренними Layout и виджетами
+        if (widget_metricsContainer) {
+            widget_metricsContainer->deleteLater();
+        }
+        grid_metrics.clear();
+
+        // Создаем новый контейнер
+        widget_metricsContainer = new QWidget(box_metricsPanelGroup);
+        layout_metricsContainer = new QVBoxLayout(widget_metricsContainer);
+        layout_metricsContainer->setContentsMargins(0, 0, 0, 0);
+        layout_metricsContainer->setSpacing(8);
+
+        grid_metrics.resize(metrics.size());
+
+        for (int i = 0; i < metrics.size(); ++i) {
+            auto* rowLayout = new QHBoxLayout();
+            rowLayout->setContentsMargins(0, 0, 0, 0);
+            rowLayout->setSpacing(5);
+
+            grid_metrics[i].resize(metrics[i].size());
+
+            for (int j = 0; j < metrics[i].size(); ++j) {
+                // Визуальная ячейка
+                auto* cellFrame = new QFrame(widget_metricsContainer);
+                cellFrame->setFrameShape(QFrame::StyledPanel);
+                // Стилизуем под плашку с рамкой
+                cellFrame->setStyleSheet("QFrame { background-color: #f5f5f5; border: 1px solid #c0c0c0; border-radius: 4px; padding: 2px 6px; }");
+
+                auto* cellLayout = new QHBoxLayout(cellFrame);
+                cellLayout->setContentsMargins(4, 4, 4, 4);
+
+                auto* label = new QLabel(QStringLiteral("-"), cellFrame);
+                label->setStyleSheet("border: none; background: transparent;"); // Убираем рамку внутри самой метки
+
+                cellLayout->addWidget(label);
+                rowLayout->addWidget(cellFrame);
+
+                grid_metrics[i][j] = { label };
+            }
+
+            rowLayout->addStretch(1); // Прижимаем все ячейки текущей строки к левому краю
+            layout_metricsContainer->addLayout(rowLayout);
+        }
+
+        // Вставляем новый контейнер в самое начало основного слоя, перед пружиной addStretch(1)
+        layout_metricsLayout->insertWidget(0, widget_metricsContainer);
     }
 
     void UIWindow::addMetricSettingRow(const QString& name, const QString& condition, double value) {
@@ -282,69 +340,37 @@ namespace gui {
         }
     }
 
-    void UIWindow::showMetrics(const QVector<agent::Metric>& metrics) {
-        if (metrics.size() != vector_metricRows.size())
-            rebuildMetricRows(metrics.size());
-
-        for (int i = 0; i < metrics.size(); ++i) {
-            auto& metric = metrics.at(i);
-            const MetricRow& row = vector_metricRows[i];
-
-            row.nameLabel->setText(QString::fromStdString(metric.name));
-            row.valueLabel->setText(QString::number(metric.value, 'f', 1));
-
-            // Предполагаем диапазон 0-100 (%) для прогресс-бара. Если у метрики
-            // другой диапазон - поправьте масштабирование здесь.
-            row.bar->setValue(qBound(0, static_cast<int>(metric.value), 100));
-
-            if (!row.criticalSpin->hasFocus()) {
-                const QSignalBlocker blocker(row.criticalSpin);
-                row.criticalSpin->setValue(metric.value);
+    void UIWindow::showMetrics(const QList<QList<agent::Metric>>& metrics) {
+        // 1. Проверяем, совпадает ли размерность интерфейса с пришедшими данными
+        bool needRebuild = false;
+        if (metrics.size() != grid_metrics.size()) {
+            needRebuild = true;
+        } else {
+            for (int i = 0; i < metrics.size(); ++i) {
+                if (metrics[i].size() != grid_metrics[i].size()) {
+                    needRebuild = true;
+                    break;
+                }
             }
         }
-    }
 
-    void UIWindow::rebuildMetricRows(int metricCount) {
-        for (MetricRow& row : vector_metricRows) {
-            layout_metricsLayout->removeWidget(row.frame);
-            row.frame->deleteLater();
+        // 2. Если количество строк или ячеек изменилось — перестраиваем сетку
+        if (needRebuild) {
+            rebuildMetricsGrid(metrics);
         }
-        vector_metricRows.clear();
 
-        for (int i = 0; i < metricCount; ++i) {
-            auto* frame = new QFrame(box_metricsPanelGroup);
-            frame->setFrameShape(QFrame::Box);
-            frame->setFrameShadow(QFrame::Plain);
+        // 3. Обновляем текст в ячейках
+        for (int i = 0; i < metrics.size(); ++i) {
+            for (int j = 0; j < metrics[i].size(); ++j) {
+                const auto& metric = metrics[i][j];
 
-            auto* rowLayout = new QHBoxLayout(frame);
-            rowLayout->setContentsMargins(8, 4, 8, 4);
+                // Форматируем строку вида "metric : value"
+                QString text = QStringLiteral("%1 : %2")
+                               .arg(QString::fromStdString(metric.name))
+                               .arg(metric.value, 0, 'f', 2);
 
-            auto* nameLabel = new QLabel(frame);
-            nameLabel->setMinimumWidth(90);
-
-            auto* bar = new QProgressBar(frame);
-            bar->setRange(0, 100);
-            bar->setTextVisible(false);
-
-            auto* valueLabel = new QLabel(frame);
-            valueLabel->setMinimumWidth(60);
-            valueLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-
-            auto* criticalLabel = new QLabel(QStringLiteral("крит.:"), frame);
-
-            auto* criticalSpin = new QDoubleSpinBox(frame);
-            criticalSpin->setRange(0.0, 100000.0);
-            criticalSpin->setMaximumWidth(90);
-
-            rowLayout->addWidget(nameLabel);
-            rowLayout->addWidget(bar, 1);
-            rowLayout->addWidget(valueLabel);
-            rowLayout->addWidget(criticalLabel);
-            rowLayout->addWidget(criticalSpin);
-
-            layout_metricsLayout->insertWidget(layout_metricsLayout->count() - 1, frame);
-
-            vector_metricRows.append({ frame, nameLabel, bar, valueLabel, criticalSpin });
+                grid_metrics[i][j]->setText(text);
+            }
         }
     }
 }

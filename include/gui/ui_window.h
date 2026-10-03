@@ -25,6 +25,7 @@ class QCheckBox;
 class QFrame;
 class QComboBox;
 class QLineEdit;
+class QSplitter;
 QT_END_NAMESPACE
 
 #define NUMBER_DISPLAY_ROWS 20 ///< Количество отображаемых строк на экране
@@ -45,11 +46,11 @@ namespace gui {
     public:
         explicit UIWindow(QWidget* parent = nullptr);
 
-        // --- вызывается снаружи (из MainWindow), чтобы обновить экран ----------
+        // Вызывается снаружи (из MainWindow), чтобы обновить экран ----------
         void setAgentNames(const QStringList& names);
-        void setActiveAgentButton(int index);
+        void setActiveAgentIndex(int index);
         void showAgentSettings(const QString& name, const core::AgentInfo& info);
-        void showMetrics(const QVector<agent::Metric>& metrics);
+        void showMetrics(const QList<QList<agent::Metric>>& metrics);
 
         signals:
         // --- действия пользователя, наружу --------------------------------------
@@ -65,17 +66,7 @@ namespace gui {
     private:
         void buildMetricsPanel();
         void buildSettingsPanel();
-        void rebuildMetricRows(int metricCount);
-
-        struct MetricRow {
-            QFrame* frame;
-            QLabel* nameLabel;
-            QProgressBar* bar;
-            QLabel* thresholdLabel;
-            QSpinBox* thresholdSpinBox;
-            QLabel* valueLabel;
-            QDoubleSpinBox* criticalSpin;
-        };
+        void rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics);
 
         /**
          * @struct MetricSettingRow
@@ -88,6 +79,11 @@ namespace gui {
             QDoubleSpinBox* valueSpin;
         };
 
+        QSplitter* splitter_main; ///< Разделитель между областями экрана
+
+        QWidget* widget_metricsContainer; ///< Внутренний контейнер для сетки
+
+        QVBoxLayout* layout_metricsContainer; ///< Слой внутри контейнера
         QHBoxLayout* layout_rootLayout;
         QVBoxLayout* layout_leftColumnLayout;
         QHBoxLayout* layout_agentBarLayout;
@@ -110,7 +106,8 @@ namespace gui {
         QPushButton* button_addMetric;
         QPushButton* button_applyButton;
 
-        QVector<MetricSettingRow> vector_dynamicMetrics; // Хранилище строк метрик
+        QVector<MetricSettingRow> vector_dynamicMetrics; ///< Хранилище строк метрик
+        QVector<QVector<QLabel*>> grid_metrics; ///< Двумерный массив виджетов
     };
 }
 
