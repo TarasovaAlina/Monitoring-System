@@ -11,6 +11,8 @@
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QSpinBox>
+#include <QComboBox>
+#include <QLineEdit>
 
 namespace gui {
     UIWindow::UIWindow(QWidget* parent) : QWidget(parent) {
@@ -67,11 +69,19 @@ namespace gui {
             layout_agentBarLayout->addWidget(button);
         }
         layout_agentBarLayout->addStretch(1);
+
+        const QSignalBlocker blocker(combo_agentSelector);
+        combo_agentSelector->clear();
+        combo_agentSelector->addItems(names);
     }
 
     void UIWindow::setActiveAgentButton(int index) {
-        if (auto* button = group_agentButtons->button(index))
+        if (auto* button = group_agentButtons->button(index)) {
             button->setChecked(true);
+        }
+
+        const QSignalBlocker blocker(combo_agentSelector);
+        combo_agentSelector->setCurrentIndex(index);
     }
 
     void UIWindow::buildMetricsPanel() {
@@ -83,50 +93,123 @@ namespace gui {
 
     void UIWindow::buildSettingsPanel() {
         box_settingsGroup = new QGroupBox(QStringLiteral("Настройка агента"), this);
+        layout_outerLayout = new QVBoxLayout(box_settingsGroup);
 
-        layout_formSettingsPanelLayout = new QFormLayout();
+        // 1. Выпадающий список выбора текущего агента
+        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Выбранный агент:")));
+        combo_agentSelector = new QComboBox(box_settingsGroup);
+        connect(combo_agentSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, &UIWindow::onAgentSelectorChanged);
+        layout_outerLayout->addWidget(combo_agentSelector);
 
+        // 2. Выпадающий список типов агентов
+        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Тип агента:")));
+        combo_agentType = new QComboBox(box_settingsGroup);
+        combo_agentType->addItems({
+            QStringLiteral("Агент CPU"),
+            QStringLiteral("Агент памяти"),
+            QStringLiteral("Агент сети")
+        });
+        layout_outerLayout->addWidget(combo_agentType);
+
+        // 3. Поле для изменения имени агента
+        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Имя агента:")));
+        edit_agentName = new QLineEdit(box_settingsGroup);
+        layout_outerLayout->addWidget(edit_agentName);
+
+        // 4. Таймаут обновления
+        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Таймаут обновления (мс):")));
         box_intervalSpin = new QSpinBox(box_settingsGroup);
         box_intervalSpin->setRange(100, 60000);
         box_intervalSpin->setSingleStep(100);
-        box_intervalSpin->setSuffix(QStringLiteral(" мс"));
-        layout_formSettingsPanelLayout->addRow(QStringLiteral("Обновление:"), box_intervalSpin);
+        layout_outerLayout->addWidget(box_intervalSpin);
 
-        box_enabledCheck = new QCheckBox(QStringLiteral("Агент активен"), box_settingsGroup);
-        connect(box_enabledCheck, &QCheckBox::toggled, this, &UIWindow::agentEnabledChanged);
-        layout_formSettingsPanelLayout->addRow(QString(), box_enabledCheck);
+        // 5. Динамический список метрик
+        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Отслеживаемые метрики:")));
 
-        label_hintLabel = new QLabel(
-            QStringLiteral("Критическое значение задаётся отдельно для каждой "
-                            "метрики - в её строке слева."),
-            box_settingsGroup);
-        label_hintLabel->setWordWrap(true);
-        label_hintLabel->setStyleSheet("color: #666; font-size: 11px;");
+        layout_metricsSettings = new QVBoxLayout();
+        layout_outerLayout->addLayout(layout_metricsSettings);
 
+        button_addMetric = new QPushButton(QStringLiteral("+ Добавить метрику"), box_settingsGroup);
+        connect(button_addMetric, &QPushButton::clicked, this, [this](){ addMetricSettingRow(); });
+        layout_outerLayout->addWidget(button_addMetric);
+
+        layout_outerLayout->addStretch(1);
+
+        // 6. Кнопка применения
         button_applyButton = new QPushButton(QStringLiteral("Применить"), box_settingsGroup);
         connect(button_applyButton, &QPushButton::clicked, this, &UIWindow::onApplyButtonClicked);
-
-        layout_outerLayout = new QVBoxLayout(box_settingsGroup);
-        layout_outerLayout->addLayout(layout_formSettingsPanelLayout);
-        layout_outerLayout->addWidget(label_hintLabel);
-        layout_outerLayout->addStretch(1);
         layout_outerLayout->addWidget(button_applyButton);
     }
 
-    void UIWindow::onApplyButtonClicked() {
-        QVector<core::MetricConfig> criticalValues;
-        criticalValues.reserve(vector_metricRows.size());
+    void UIWindow::addMetricSettingRow(const QString& name, const QString& condition, double value) {
+        auto* widget = new QWidget(box_settingsGroup);
+        auto* rowLayout = new QHBoxLayout(widget);
+        rowLayout->setContentsMargins(0, 0, 0, 0);
 
-        for (const MetricRow& row : vector_metricRows) {
-            criticalValues.append(core::MetricConfig {
-                row.nameLabel->text().toStdString(),
-                core::Threshold {
-                    row.thresholdLabel->text().toStdString(),
-                    row.criticalSpin->value()
+        auto* nameEdit = new QLineEdit(widget);
+        nameEdit->setPlaceholderText(QStringLiteral("Название метрики"));
+        nameEdit->setText(name);
+
+        auto* conditionCombo = new QComboBox(widget);
+        conditionCombo->addItems({">", "<", "==", "<=", ">=", "!="});
+        conditionCombo->setCurrentText(condition);
+
+        auto* valueSpin = new QDoubleSpinBox(widget);
+        valueSpin->setRange(-1000000.0, 1000000.0);
+        valueSpin->setValue(value);
+
+        auto* removeBtn = new QPushButton(QStringLiteral("-"), widget);
+        removeBtn->setFixedWidth(30);
+
+        rowLayout->addWidget(nameEdit);
+        rowLayout->addWidget(conditionCombo);
+        rowLayout->addWidget(valueSpin);
+        rowLayout->addWidget(removeBtn);
+
+        layout_metricsSettings->addWidget(widget);
+
+        MetricSettingRow row = { widget, nameEdit, conditionCombo, valueSpin };
+        vector_dynamicMetrics.append(row);
+
+        // Логика удаления строки
+        connect(removeBtn, &QPushButton::clicked, this, [this, widget]() {
+            for (int i = 0; i < vector_dynamicMetrics.size(); ++i) {
+                if (vector_dynamicMetrics[i].containerWidget == widget) {
+                    vector_dynamicMetrics.removeAt(i);
+                    break;
                 }
+            }
+            widget->deleteLater();
+        });
+    }
+
+    void UIWindow::onApplyButtonClicked() {
+        QVector<core::MetricConfig> metricsData;
+        metricsData.reserve(vector_dynamicMetrics.size());
+
+        for (const auto& row : vector_dynamicMetrics) {
+            metricsData.append({
+                row.nameEdit->text().toStdString(),
+                core::Threshold(
+                    row.conditionCombo->currentText().toStdString(),
+                    row.valueSpin->value())
             });
         }
-        emit applyRequested(box_intervalSpin->value(), criticalValues);
+
+        emit applyRequested(
+            edit_agentName->text(),
+            combo_agentType->currentIndex(),
+            metricsData,
+            box_intervalSpin->value()
+        );
+    }
+
+    void UIWindow::onAgentSelectorChanged(int index) {
+        // Блокируем сигналы, чтобы избежать зацикливания при программном изменении
+        if (index >= 0) {
+            emit agentSelected(index);
+        }
     }
 
     void UIWindow::showAgentSettings(int updateIntervalMs, bool enabled) {

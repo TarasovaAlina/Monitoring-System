@@ -4,6 +4,7 @@
 #include <QFormLayout>
 #include <QPushButton>
 
+#include "core/config_service.h"
 #include "agent/agent.h"
 #include <QString>
 #include <QVector>
@@ -20,6 +21,8 @@ class QSpinBox;
 class QDoubleSpinBox;
 class QCheckBox;
 class QFrame;
+class QComboBox;
+class QLineEdit;
 QT_END_NAMESPACE
 
 #define NUMBER_DISPLAY_ROWS 20 ///< Количество отображаемых строк на экране
@@ -50,10 +53,12 @@ namespace gui {
         // --- действия пользователя, наружу --------------------------------------
         void agentSelected(int index);
         void agentEnabledChanged(bool enabled);
-        void applyRequested(int updateIntervalMs, QVector<MetricConfigData> criticalValues);
+        void applyRequested(const QString& agentName, int agentTypeIndex, const QList<core::MetricConfig>& metrics, long updateIntervalMs);
 
     private slots:
         void onApplyButtonClicked();
+        void addMetricSettingRow(const QString& name = "", const QString& condition = ">", double value = 0.0) noexcept;
+        void onAgentSelectorChanged(int index) noexcept;
 
     private:
         void buildAgentBar();
@@ -72,6 +77,17 @@ namespace gui {
             QDoubleSpinBox* criticalSpin;
         };
 
+        /**
+         * @struct MetricSettingRow
+         * @brief Структура для хранения указателей на элементы динамической строки
+         */
+        struct MetricSettingRow {
+            QWidget* containerWidget;
+            QLineEdit* nameEdit;
+            QComboBox* conditionCombo;
+            QDoubleSpinBox* valueSpin;
+        };
+
         QWidget* widget_agentBar;
 
         QHBoxLayout* layout_rootLayout;
@@ -80,6 +96,7 @@ namespace gui {
         QVBoxLayout* layout_metricsLayout;
         QVBoxLayout* layout_outerLayout;
         QFormLayout* layout_formSettingsPanelLayout;
+        QVBoxLayout* layout_metricsSettings;
 
         QButtonGroup* group_agentButtons;
         QLabel* label_hintLabel;
@@ -90,7 +107,13 @@ namespace gui {
         QSpinBox* box_intervalSpin;
         QCheckBox* box_enabledCheck;
 
-        QVector<MetricRow> vector_metricRows;
+        // Элементы управления для панели настроек
+        QComboBox* combo_agentSelector;
+        QComboBox* combo_agentType;
+        QLineEdit* edit_agentName;
+        QPushButton* button_addMetric;
+
+        QVector<MetricSettingRow> vector_dynamicMetrics; // Хранилище строк метрик
     };
 }
 
