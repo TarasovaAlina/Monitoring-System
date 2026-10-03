@@ -95,23 +95,22 @@ namespace gui {
         QHBoxLayout* layout_agentBarLayout;
         QVBoxLayout* layout_metricsLayout;
         QVBoxLayout* layout_outerLayout;
-        QFormLayout* layout_formSettingsPanelLayout;
-        QVBoxLayout* layout_metricsSettings;
 
         QButtonGroup* group_agentButtons;
-        QLabel* label_hintLabel;
-        QPushButton* button_applyButton;
 
         QGroupBox* box_metricsPanelGroup;
         QGroupBox* box_settingsGroup;
-        QSpinBox* box_intervalSpin;
-        QCheckBox* box_enabledCheck;
 
         // Элементы управления для панели настроек
         QComboBox* combo_agentSelector;
+        QCheckBox* box_enabledCheck;
+        QWidget* widget_settingsDetails; // Контейнер для настроек ниже чекбокса
         QComboBox* combo_agentType;
         QLineEdit* edit_agentName;
+        QSpinBox* box_intervalSpin;
+        QVBoxLayout* layout_metricsSettings;
         QPushButton* button_addMetric;
+        QPushButton* button_applyButton;
 
         QVector<MetricSettingRow> vector_dynamicMetrics; // Хранилище строк метрик
     };

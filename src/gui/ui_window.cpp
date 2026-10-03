@@ -95,51 +95,69 @@ namespace gui {
         box_settingsGroup = new QGroupBox(QStringLiteral("Настройка агента"), this);
         layout_outerLayout = new QVBoxLayout(box_settingsGroup);
 
-        // 1. Выпадающий список выбора текущего агента
+        // Выпадающий список выбора текущего агента
         layout_outerLayout->addWidget(new QLabel(QStringLiteral("Выбранный агент:")));
         combo_agentSelector = new QComboBox(box_settingsGroup);
-        connect(combo_agentSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                this, &UIWindow::onAgentSelectorChanged);
+        connect(combo_agentSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &UIWindow::onAgentSelectorChanged);
         layout_outerLayout->addWidget(combo_agentSelector);
 
-        // 2. Выпадающий список типов агентов
-        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Тип агента:")));
+        // Чекбокс активности агента (сразу под выбором агента)
+        box_enabledCheck = new QCheckBox(QStringLiteral("Агент активен"), box_settingsGroup);
+        layout_outerLayout->addWidget(box_enabledCheck);
+
+        // Переключаем видимость контейнера с настройками при изменении состояния чекбокса
+        connect(box_enabledCheck, &QCheckBox::toggled, widget_settingsDetails, &QWidget::setVisible);
+        // Отправляем сигнал наружу в MainWindow
+        connect(box_enabledCheck, &QCheckBox::toggled, this, &UIWindow::agentEnabledChanged);
+
+        // -------------------------------------------------------------------
+        //   Контейнер для всех остальных настроек, находящихся ниже чекбокса
+        // -------------------------------------------------------------------
+        widget_settingsDetails = new QWidget(box_settingsGroup);
+        auto* detailsLayout = new QVBoxLayout(widget_settingsDetails);
+        detailsLayout->setContentsMargins(0, 0, 0, 0); // Убираем отступы контейнера
+
+        // Выпадающий список типов агентов
+        detailsLayout->addWidget(new QLabel(QStringLiteral("Тип агента:")));
         combo_agentType = new QComboBox(box_settingsGroup);
         combo_agentType->addItems({
             QStringLiteral("Агент CPU"),
             QStringLiteral("Агент памяти"),
             QStringLiteral("Агент сети")
         });
-        layout_outerLayout->addWidget(combo_agentType);
+        detailsLayout->addWidget(combo_agentType);
 
-        // 3. Поле для изменения имени агента
-        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Имя агента:")));
-        edit_agentName = new QLineEdit(box_settingsGroup);
-        layout_outerLayout->addWidget(edit_agentName);
+        // Поле для изменения имени агента
+        detailsLayout->addWidget(new QLabel(QStringLiteral("Имя агента:")));
+        edit_agentName = new QLineEdit(widget_settingsDetails);
+        detailsLayout->addWidget(edit_agentName);
 
-        // 4. Таймаут обновления
-        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Таймаут обновления (мс):")));
-        box_intervalSpin = new QSpinBox(box_settingsGroup);
+        // Таймаут обновления
+        detailsLayout->addWidget(new QLabel(QStringLiteral("Таймаут обновления (мс):")));
+        box_intervalSpin = new QSpinBox(widget_settingsDetails);
         box_intervalSpin->setRange(100, 60000);
         box_intervalSpin->setSingleStep(100);
-        layout_outerLayout->addWidget(box_intervalSpin);
+        detailsLayout->addWidget(box_intervalSpin);
 
-        // 5. Динамический список метрик
-        layout_outerLayout->addWidget(new QLabel(QStringLiteral("Отслеживаемые метрики:")));
-
+        // Динамические метрики
+        detailsLayout->addWidget(new QLabel(QStringLiteral("Отслеживаемые метрики:")));
         layout_metricsSettings = new QVBoxLayout();
-        layout_outerLayout->addLayout(layout_metricsSettings);
+        detailsLayout->addLayout(layout_metricsSettings);
 
-        button_addMetric = new QPushButton(QStringLiteral("+ Добавить метрику"), box_settingsGroup);
+        button_addMetric = new QPushButton(QStringLiteral("+ Добавить метрику"), widget_settingsDetails);
         connect(button_addMetric, &QPushButton::clicked, this, [this](){ addMetricSettingRow(); });
-        layout_outerLayout->addWidget(button_addMetric);
+        detailsLayout->addWidget(button_addMetric);
 
-        layout_outerLayout->addStretch(1);
+        detailsLayout->addStretch(1);
 
-        // 6. Кнопка применения
-        button_applyButton = new QPushButton(QStringLiteral("Применить"), box_settingsGroup);
+        // Кнопка применения
+        button_applyButton = new QPushButton(QStringLiteral("Применить"), widget_settingsDetails);
         connect(button_applyButton, &QPushButton::clicked, this, &UIWindow::onApplyButtonClicked);
-        layout_outerLayout->addWidget(button_applyButton);
+        detailsLayout->addWidget(button_applyButton);
+
+        // Добавляем контейнер в основной слой панели настроек
+        layout_outerLayout->addWidget(widget_settingsDetails);
+        layout_outerLayout->addStretch(1);
     }
 
     void UIWindow::addMetricSettingRow(const QString& name, const QString& condition, double value) {
@@ -213,11 +231,15 @@ namespace gui {
     }
 
     void UIWindow::showAgentSettings(int updateIntervalMs, bool enabled) {
+        // Блокируем сигналы, чтобы при установке значения из кода не отправлялся повторный сигнал
         const QSignalBlocker b1(box_intervalSpin);
         const QSignalBlocker b2(box_enabledCheck);
 
         box_intervalSpin->setValue(updateIntervalMs);
         box_enabledCheck->setChecked(enabled);
+
+        // Синхронизируем видимость панели с текущим состоянием
+        widget_settingsDetails->setVisible(enabled);
     }
 
     void UIWindow::showMetrics(const QVector<agent::Metric>& metrics) {
