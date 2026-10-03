@@ -82,21 +82,7 @@ namespace gui {
         const std::string agentName = currentAgentName().toStdString();
         core::AgentInfo info = _kernel->getAgentInfo(agentName);
 
-        _ui->showAgentSettings(info.refresh_time_ms, info.is_active);
-
-        QVector<agent::Metric> metrics;
-        metrics.reserve(static_cast<int>(info.metrics.size()));
-        for (const auto& metric : info.metrics) {
-            MetricConfig data;
-
-            data.name = QString::fromStdString(metric.name);
-            data.value = metric.value;
-            data.criticalValue = metric.critical_value;
-
-            metrics.append(data);
-        }
-
-        _ui->showMetrics(metrics);
+        _ui->showAgentSettings(QString::fromStdString(agentName), info);
     }
 
     void MainWindow::onAgentEnabledChanged(bool enabled) {

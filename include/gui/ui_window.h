@@ -10,6 +10,8 @@
 #include <QVector>
 #include <QWidget>
 
+#include "core/kernel.h"
+
 QT_BEGIN_NAMESPACE
 class QButtonGroup;
 class QHBoxLayout;
@@ -46,7 +48,7 @@ namespace gui {
         // --- вызывается снаружи (из MainWindow), чтобы обновить экран ----------
         void setAgentNames(const QStringList& names);
         void setActiveAgentButton(int index);
-        void showAgentSettings(int updateIntervalMs, bool enabled);
+        void showAgentSettings(const QString& name, const core::AgentInfo& info);
         void showMetrics(const QVector<agent::Metric>& metrics);
 
         signals:

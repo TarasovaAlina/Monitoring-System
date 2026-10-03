@@ -1,5 +1,6 @@
 #include "gui/ui_window.h"
 #include "core/config_service.h"
+#include "core/kernel.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -230,16 +231,70 @@ namespace gui {
         }
     }
 
-    void UIWindow::showAgentSettings(int updateIntervalMs, bool enabled) {
+    void UIWindow::showAgentSettings(const QString& name, const core::AgentInfo& info) {
         // Блокируем сигналы, чтобы при установке значения из кода не отправлялся повторный сигнал
-        const QSignalBlocker b1(box_intervalSpin);
-        const QSignalBlocker b2(box_enabledCheck);
+        const QSignalBlocker b1(box_enabledCheck);
+        const QSignalBlocker b2(combo_agentType);
+        const QSignalBlocker b3(edit_agentName);
+        const QSignalBlocker b4(box_intervalSpin);
 
-        box_intervalSpin->setValue(updateIntervalMs);
-        box_enabledCheck->setChecked(enabled);
+        box_enabledCheck->setChecked(info.is_active);
+        widget_settingsDetails->setVisible(info.is_active);
+
+        combo_agentType->setCurrentIndex(static_cast<int>(info.type));
+        edit_agentName->setText(name);
+        box_intervalSpin->setValue(info.refresh_time_ms);
 
         // Синхронизируем видимость панели с текущим состоянием
-        widget_settingsDetails->setVisible(enabled);
+        widget_settingsDetails->setVisible(info.is_active);
+
+        // Собираем множество имён метрик, пришедших из info
+        QSet<QString> infoMetricNames;
+        for (const auto& metric : info.metrics) {
+            infoMetricNames.insert(QString::fromStdString(metric.target));
+        }
+
+        // Удаляем из UI те метрики, которых НЕТ в info
+        // Итерируемся с конца массива, чтобы корректно удалять элементы по индексу
+        for (int i = vector_dynamicMetrics.size() - 1; i >= 0; --i) {
+            const QString uiMetricName = vector_dynamicMetrics[i].nameEdit->text();
+
+            if (!infoMetricNames.contains(uiMetricName)) {
+                // Удаляем QWidget из интерфейса и очищаем запись из вектора
+                auto* widget = vector_dynamicMetrics[i].containerWidget;
+                vector_dynamicMetrics.removeAt(i);
+                widget->deleteLater();
+            }
+        }
+
+        // Обновляем существующие в UI метрики и добавляем отсутствующие
+        for (const auto& metric : info.metrics) {
+            const QString metricName = QString::fromStdString(metric);
+
+            // ПРИМЕЧАНИЕ: скорректируйте обращения к полям ниже (condition / critical_value),
+            // если в вашей структуре core::MetricConfig они называются иначе
+            // (например, metric.threshold.condition или metric.criticalValue)
+            const QString condition = QString::fromStdString(metric.threshold.operation);
+            const double criticalValue = metric.threshold.value;
+
+            // Ищем, есть ли уже строка с таким именем метрики в UI
+            auto it = std::find_if(vector_dynamicMetrics.begin(), vector_dynamicMetrics.end(),
+                                   [&metricName](const MetricSettingRow& row) {
+                                       return row.nameEdit->text() == metricName;
+                                   });
+
+            if (it != vector_dynamicMetrics.end()) {
+                // Метрика ЕСТЬ в UI -> обновляем её значения
+                const QSignalBlocker bCond(it->conditionCombo);
+                const QSignalBlocker bVal(it->valueSpin);
+
+                it->conditionCombo->setCurrentText(condition);
+                it->valueSpin->setValue(criticalValue);
+            } else {
+                // Метрики НЕТ в UI -> добавляем новую строчку
+                addMetricSettingRow(metricName, condition, criticalValue);
+            }
+        }
     }
 
     void UIWindow::showMetrics(const QVector<agent::Metric>& metrics) {
