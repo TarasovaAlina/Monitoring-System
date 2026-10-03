@@ -235,7 +235,7 @@ namespace gui {
 
         // Собираем множество имён метрик, пришедших из info
         QSet<QString> infoMetricNames;
-        for (const auto& metric : info.metrics) {
+        for (const auto& metric : info.critical_metrics) {
             infoMetricNames.insert(QString::fromStdString(metric.target));
         }
 
@@ -253,8 +253,8 @@ namespace gui {
         }
 
         // Обновляем существующие в UI метрики и добавляем отсутствующие
-        for (const auto& metric : info.metrics) {
-            const QString metricName = QString::fromStdString(metric);
+        for (const auto& metric : info.critical_metrics) {
+            const QString metricName = QString::fromStdString(metric.target);
 
             // ПРИМЕЧАНИЕ: скорректируйте обращения к полям ниже (condition / critical_value),
             // если в вашей структуре core::MetricConfig они называются иначе

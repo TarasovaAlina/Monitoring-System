@@ -29,7 +29,7 @@ namespace core {
 
         return AgentInfo {
             agent->type(),
-            agent->metricNamesList(),
+            _agent_service->criticalMetricValues(name),
             agent->timeElapsedSinceStart(),
             agent->timeout(),
             agent->isActive()
