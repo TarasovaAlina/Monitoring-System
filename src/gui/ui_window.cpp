@@ -2,13 +2,11 @@
 #include "core/config_service.h"
 #include "core/kernel.h"
 
-#include <QButtonGroup>
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QProgressBar>
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QSpinBox>
@@ -33,28 +31,6 @@ namespace gui {
     }
 
     void UIWindow::setAgentNames(const QStringList& names) {
-        // Полностью пересобираем панель вкладок (безопасно и для первого
-        // вызова, и для случая, когда список агентов изменился).
-        QLayoutItem* item;
-        while ((item = layout_agentBarLayout->takeAt(0)) != nullptr) {
-            if (auto* button = qobject_cast<QAbstractButton*>(item->widget())) {
-                group_agentButtons->removeButton(button);
-                button->deleteLater();
-            }
-            delete item;
-        }
-
-        for (int i = 0; i < names.size(); ++i) {
-            auto* button = new QPushButton(names.at(i), this);
-            button->setCheckable(true);
-            button->setMinimumHeight(28);
-            button->setStyleSheet(
-                "QPushButton { border: 1px solid #333; padding: 4px 16px; }"
-                "QPushButton:checked { background-color: #d8d8d8; font-weight: bold; }");
-            group_agentButtons->addButton(button, i);
-            layout_agentBarLayout->addWidget(button);
-        }
-        layout_agentBarLayout->addStretch(1);
 
         const QSignalBlocker blocker(combo_agentSelector);
         combo_agentSelector->clear();
@@ -62,10 +38,6 @@ namespace gui {
     }
 
     void UIWindow::setActiveAgentIndex(int index) {
-        if (auto* button = group_agentButtons->button(index)) {
-            button->setChecked(true);
-        }
-
         const QSignalBlocker blocker(combo_agentSelector);
         combo_agentSelector->setCurrentIndex(index);
     }
