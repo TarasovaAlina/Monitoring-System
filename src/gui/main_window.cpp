@@ -5,10 +5,11 @@
 #include <QTimer>
 
 namespace gui {
-    MainWindow::MainWindow(QWidget* parent)
+    MainWindow::MainWindow(QWidget* parent) noexcept
     : QMainWindow(parent)
     , _log_reader_thread(new QThread(this))
-    , _is_running(1) {
+    , _is_running(1)
+    , _currentAgentIndex(0) {
         setWindowTitle(QStringLiteral("Системный монитор"));
         resize(900, 520);
 
@@ -28,7 +29,6 @@ namespace gui {
 
         reloadAgentList();
 
-        _currentAgentIndex = 0;
         _ui->setActiveAgentIndex(0);
         pushCurrentAgentToUI();
 
@@ -41,12 +41,12 @@ namespace gui {
         _log_reader_thread->start();
     }
 
-    MainWindow::~MainWindow() {
+    MainWindow::~MainWindow() noexcept {
         _log_reader_thread->quit();
         _log_reader_thread->wait();
     }
 
-    void MainWindow::reloadAgentList() {
+    void MainWindow::reloadAgentList() noexcept {
         _agentNames.clear();
         if (!_kernel)
             return;
@@ -63,11 +63,11 @@ namespace gui {
         _ui->setAgentNames(_agentNames);
     }
 
-    QString MainWindow::currentAgentName() const {
+    QString MainWindow::currentAgentName() const noexcept {
         return _agentNames.value(_currentAgentIndex);
     }
 
-    void MainWindow::onAgentSelected(int index) {
+    void MainWindow::onAgentSelected(int index) noexcept {
         if (index < 0 || index >= _agentNames.size())
             return;
 
@@ -75,7 +75,7 @@ namespace gui {
         pushCurrentAgentToUI();
     }
 
-    void MainWindow::pushCurrentAgentToUI() {
+    void MainWindow::pushCurrentAgentToUI() const noexcept {
         if (!_kernel || _agentNames.isEmpty())
             return;
 
@@ -85,7 +85,7 @@ namespace gui {
         _ui->showAgentSettings(QString::fromStdString(agentName), info);
     }
 
-    void MainWindow::onAgentEnabledChanged(bool enabled) {
+    void MainWindow::onAgentEnabledChanged(bool enabled) const noexcept {
         if (!_kernel || _agentNames.isEmpty())
             return;
 
@@ -99,7 +99,9 @@ namespace gui {
         }
     }
 
-    void MainWindow::onApplyRequested(const QString& new_name, int index, const QList<core::MetricConfig>& critical_metrics_list, long timeout_ms) noexcept {
+    void MainWindow::onApplyRequested(const QString& new_name, int index,
+        const QList<core::MetricConfig>& critical_metrics_list, long timeout_ms) const noexcept {
+
         if (!_kernel || _agentNames.isEmpty())
             return;
 

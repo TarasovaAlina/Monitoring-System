@@ -42,26 +42,26 @@ namespace gui {
          * @brief Строит каркас окна и соединяем слоты со сигналами
          * @param parent
          */
-        explicit UIWindow(QWidget* parent = nullptr);
+        explicit UIWindow(QWidget* parent = nullptr) noexcept;
 
         /**
          * @brief Обновляет выпадающий список с вариантами выбора агентов
          * @param names Список имен текущих агентов
          */
-        void setAgentNames(const QStringList& names);
+        void setAgentNames(const QStringList& names) noexcept;
 
         /**
          * @brief Устанавливает текущий активный вариант из выпадающего списка
          * @param index Индекс имени агента из списка
          */
-        void setActiveAgentIndex(int index);
+        void setActiveAgentIndex(int index) noexcept;
 
         /**
          * @brief Отображает на панели справа настройки выбранного агента
          * @param name Имя этого агента
          * @param info Конфигурация этого агента
          */
-        void showAgentSettings(const QString& name, const core::AgentInfo& info);
+        void showAgentSettings(const QString& name, const core::AgentInfo& info) noexcept;
 
         /**
          * @brief Выводит на левой панели до 20 последних собранных данных метрик.
@@ -69,7 +69,7 @@ namespace gui {
          * которые были собраны отдельным агентом
          * @param metrics Таблица данных, готовая к выводу на экран
          */
-        void showMetrics(const QList<QList<agent::Metric>>& metrics);
+        void showMetrics(const QList<QList<agent::Metric>>& metrics) noexcept;
 
         signals: // Действия пользователя, наружу
         /**
@@ -78,7 +78,7 @@ namespace gui {
          * отвечающего за выбор отображения настроек конкретного агента.
          * @param index Индекс этого агента из списка имен агентов, хранящийся внутри MainWindow
          */
-        void agentSelected(int index);
+        void agentSelected(int index) noexcept;
 
         /**
          * @brief Оповещает класс MainWindow, что был нажат чекбокс,
@@ -86,7 +86,7 @@ namespace gui {
          * @param enabled Если чекбокс активирован (true), то агент работает,
          * иначе переходит в состояние сна и перестает обновлять метрики и передавать в систему
          */
-        void agentEnabledChanged(bool enabled);
+        void agentEnabledChanged(bool enabled) noexcept;
 
         /**
          * @brief Оповещает класс MainWindow, что была нажата кнопка "Применить",
@@ -96,14 +96,14 @@ namespace gui {
          * @param metrics Список критических значений метрик
          * @param timeout_ms Таймаут обновления метрик агентом (в мс)
          */
-        void applyRequested(const QString& agent_name, int index, const QList<core::MetricConfig>& metrics, long timeout_ms);
+        void applyRequested(const QString& agent_name, int index, const QList<core::MetricConfig>& metrics, long timeout_ms) const noexcept;
 
     private slots:
         /**
          * @brief Обработчик сигнала нажатия на кнопку "Применить" на панели справа.
          * Собирает все данные, которые ввел пользователь и посылает сигнал applyRequested
          */
-        void onApplyButtonClicked();
+        void onApplyButtonClicked() const noexcept;
 
         /**
          * @brief Обработчик нажатия на кнопку "+".
@@ -118,14 +118,14 @@ namespace gui {
         void onAgentSelectorChanged(int index) noexcept;
 
     private:
-        void buildMetricsPanel(); ///< Конструирует панель слева, которая служит для вывода собранных метрик
-        void buildSettingsPanel(); ///< Конструирует панель справа, которая служит для отображения настроек агентов
+        void buildMetricsPanel() noexcept; ///< Конструирует панель слева, которая служит для вывода собранных метрик
+        void buildSettingsPanel() noexcept; ///< Конструирует панель справа, которая служит для отображения настроек агентов
 
         /**
          * @brief Перестраивает панель слева, чтобы все актуальные данные смогли вместиться на экране
          * @param metrics Массив актуальных метрик, хранящийся отдельными строками для 20 последних обновлений агентов
          */
-        void rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics);
+        void rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics) noexcept;
 
         /**
          * @struct MetricSettingRow

@@ -14,7 +14,7 @@
 #include <QLineEdit>
 
 namespace gui {
-    UIWindow::UIWindow(QWidget* parent) : QWidget(parent) {
+    UIWindow::UIWindow(QWidget* parent) noexcept : QWidget(parent) {
         layout_rootLayout = new QHBoxLayout(this);
 
         // Левая колонка
@@ -30,19 +30,19 @@ namespace gui {
         layout_rootLayout->addWidget(box_settingsGroup, 1);
     }
 
-    void UIWindow::setAgentNames(const QStringList& names) {
+    void UIWindow::setAgentNames(const QStringList& names) noexcept {
 
         const QSignalBlocker blocker(combo_agentSelector);
         combo_agentSelector->clear();
         combo_agentSelector->addItems(names);
     }
 
-    void UIWindow::setActiveAgentIndex(int index) {
+    void UIWindow::setActiveAgentIndex(int index) noexcept {
         const QSignalBlocker blocker(combo_agentSelector);
         combo_agentSelector->setCurrentIndex(index);
     }
 
-    void UIWindow::buildMetricsPanel() {
+    void UIWindow::buildMetricsPanel() noexcept {
         box_metricsPanelGroup = new QGroupBox(QStringLiteral("Вывод метрик на экран"), this);
 
         layout_metricsLayout = new QVBoxLayout(box_metricsPanelGroup);
@@ -58,7 +58,7 @@ namespace gui {
         layout_metricsLayout->addStretch(1); // Пружина, прижимающая контейнер к верху
     }
 
-    void UIWindow::buildSettingsPanel() {
+    void UIWindow::buildSettingsPanel() noexcept {
         box_settingsGroup = new QGroupBox(QStringLiteral("Настройка агента"), this);
         layout_outerLayout = new QVBoxLayout(box_settingsGroup);
 
@@ -127,7 +127,7 @@ namespace gui {
         layout_outerLayout->addStretch(1);
     }
 
-    void UIWindow::rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics) {
+    void UIWindow::rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics) noexcept {
         // Удаляем старый контейнер со всеми внутренними Layout и виджетами
         if (widget_metricsContainer) {
             widget_metricsContainer->deleteLater();
@@ -176,7 +176,7 @@ namespace gui {
         layout_metricsLayout->insertWidget(0, widget_metricsContainer);
     }
 
-    void UIWindow::addMetricSettingRow(const QString& name, const QString& condition, double value) {
+    void UIWindow::addMetricSettingRow(const QString& name, const QString& condition, double value) noexcept {
         auto* widget = new QWidget(box_settingsGroup);
         auto* rowLayout = new QHBoxLayout(widget);
         rowLayout->setContentsMargins(0, 0, 0, 0);
@@ -218,7 +218,7 @@ namespace gui {
         });
     }
 
-    void UIWindow::onApplyButtonClicked() {
+    void UIWindow::onApplyButtonClicked() const noexcept {
         QVector<core::MetricConfig> metricsData;
         metricsData.reserve(vector_dynamicMetrics.size());
 
@@ -239,14 +239,14 @@ namespace gui {
         );
     }
 
-    void UIWindow::onAgentSelectorChanged(int index) {
+    void UIWindow::onAgentSelectorChanged(int index) noexcept {
         // Блокируем сигналы, чтобы избежать зацикливания при программном изменении
         if (index >= 0) {
             emit agentSelected(index);
         }
     }
 
-    void UIWindow::showAgentSettings(const QString& name, const core::AgentInfo& info) {
+    void UIWindow::showAgentSettings(const QString& name, const core::AgentInfo& info) noexcept {
         // Блокируем сигналы, чтобы при установке значения из кода не отправлялся повторный сигнал
         const QSignalBlocker b1(box_enabledCheck);
         const QSignalBlocker b2(combo_agentType);
@@ -312,7 +312,7 @@ namespace gui {
         }
     }
 
-    void UIWindow::showMetrics(const QList<QList<agent::Metric>>& metrics) {
+    void UIWindow::showMetrics(const QList<QList<agent::Metric>>& metrics) noexcept {
         // 1. Проверяем, совпадает ли размерность интерфейса с пришедшими данными
         bool needRebuild = false;
         if (metrics.size() != grid_metrics.size()) {

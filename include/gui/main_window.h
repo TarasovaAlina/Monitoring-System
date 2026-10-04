@@ -28,28 +28,32 @@ namespace gui {
          * 2. Создание UI
          * 3. Соединение сигналов от UI со слотами этого класса
          */
-        explicit MainWindow(QWidget* parent = nullptr);
-        ~MainWindow() override;
+        explicit MainWindow(QWidget* parent = nullptr) noexcept;
+        ~MainWindow() noexcept override;
 
     private slots:
         /**
          * @brief Реакция на переключение пользователем вкладки с агентами
          * @param index Индекс агента, который выбрал пользователь
          */
-        void onAgentSelected(int index);
+        void onAgentSelected(int index) noexcept;
 
         /**
          * @brief Реакция на включение/выключение тумблера активности агента,
          * чья информация показана на вкладке
          * @param enabled true - агент должен быть активен, false - переключиться в режим сна
          */
-        void onAgentEnabledChanged(bool enabled);
+        void onAgentEnabledChanged(bool enabled) const noexcept;
 
         /**
          * @brief Реакция на изменение имени текущего агента
          * @param new_name Строка, которую ввел пользователь в поле ввода
          */
-        void onApplyRequested(const QString& new_name, int index, const QList<core::MetricConfig>& critical_metrics_list, long timeout_ms) noexcept;
+        void onApplyRequested(
+            const QString& new_name,
+            int index,
+            const QList<core::MetricConfig>& critical_metrics_list,
+            long timeout_ms) const noexcept;
 
     private:
         /**
@@ -60,17 +64,17 @@ namespace gui {
         /**
          * @brief Запускает ожидание, когда в файл с логами запишется новая информация
          */
-        void updatingLogs(const std::vector<agent::Metric>& metricsList) noexcept;
+        void updatingLogs(const std::vector<agent::Metric>& metrics_list) noexcept;
 
         /**
          * @brief Отображает на во вкладке агента его текущие настроки
          */
-        void pushCurrentAgentToUI();
+        void pushCurrentAgentToUI() const noexcept;
 
         /**
          * @return Имя агента, чья вкладка с настройками активна в данный момент
          */
-        QString currentAgentName() const;
+        QString currentAgentName() const noexcept;
 
         std::unique_ptr<core::Kernel> _kernel; ///< Ядро программы, которое управляет внутренней логикой
         UIWindow* _ui; ///< Интерфейс программы, который занимается отображением текущей информации
@@ -80,7 +84,7 @@ namespace gui {
         QAtomicInt _is_running; ///< Атомарная переменная, показывающая, работает ли приложение в данный момент времени
 
         QStringList _agentNames; ///< Список имен агентов, которые работают в ядре
-        int _currentAgentIndex = 0; ///< Индекс агента в списке, который открыт во вкладке настроек агентов
+        int _currentAgentIndex; ///< Индекс агента в списке, который открыт во вкладке настроек агентов
 
         QList<QList<agent::Metric>> _metrics_list; ///< Список метрик, которые должны быть показаны в UI
     };
