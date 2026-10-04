@@ -8,6 +8,7 @@ namespace gui {
     MainWindow::MainWindow(QWidget* parent) noexcept
     : QMainWindow(parent)
     , _log_reader_thread(new QThread(this))
+    , _agent_poller_thread(new QThread(this))
     , _is_running(1)
     , _currentAgentIndex(0) {
         setWindowTitle(QStringLiteral("Системный монитор"));
@@ -38,12 +39,22 @@ namespace gui {
         connect(_worker, &Worker::updateMetricsList, this, &MainWindow::updatingLogs);
         connect(_log_reader_thread, &QThread::finished, _worker, &QObject::deleteLater);
 
+        _agent_poller = new AgentPoller(_kernel.get());
+        _agent_poller->moveToThread(_agent_poller_thread);
+
+        connect(_agent_poller, &AgentPoller::agentsListFetched, this, &MainWindow::onAgentEnabledChanged);
+        connect(_agent_poller_thread, &QThread::finished, _agent_poller_thread, &QObject::deleteLater);
+
         _log_reader_thread->start();
+        _agent_poller_thread->start();
     }
 
     MainWindow::~MainWindow() noexcept {
         _log_reader_thread->quit();
         _log_reader_thread->wait();
+
+        _agent_poller_thread->quit();
+        _agent_poller_thread->wait();
     }
 
     void MainWindow::reloadAgentList() noexcept {

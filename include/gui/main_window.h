@@ -5,6 +5,8 @@
 #include "core/kernel.h"
 #include "tools/log_reader.h"
 #include "worker.h"
+#include "agent_poller.h"
+
 #include <QMainWindow>
 #include <QStringList>
 #include <QThread>
@@ -80,7 +82,10 @@ namespace gui {
         UIWindow* _ui; ///< Интерфейс программы, который занимается отображением текущей информации
 
         Worker* _worker; ///< Обработчик класса LogReader, который имплементирован внутрь MainWindow
+        AgentPoller* _agent_poller; ///< Опрашиватель данных из Kernel
         QThread* _log_reader_thread; ///< Поток, в котором происходит обработка LogReader класса
+        QThread* _agent_poller_thread; ///< Поток, в котором происходит цикличное получение данных из Kernel
+
         QAtomicInt _is_running; ///< Атомарная переменная, показывающая, работает ли приложение в данный момент времени
 
         QStringList _agentNames; ///< Список имен агентов, которые работают в ядре
