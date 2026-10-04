@@ -1,16 +1,13 @@
 #ifndef SYSTEM_MONITORING_UI_WINDOW_H
 #define SYSTEM_MONITORING_UI_WINDOW_H
 
-#include <QFormLayout>
-#include <QPushButton>
-
 #include "core/config_service.h"
+#include "core/kernel.h"
 #include "agent/agent.h"
 #include <QString>
 #include <QVector>
-#include <QWidget>
-
-#include "core/kernel.h"
+#include <QFormLayout>
+#include <QPushButton>
 
 QT_BEGIN_NAMESPACE
 class QButtonGroup;
@@ -30,42 +27,104 @@ QT_END_NAMESPACE
 
 #define NUMBER_DISPLAY_ROWS 20 ///< Количество отображаемых строк на экране
 
-// ---------------------------------------------------------------------------
-// UIWindow
-//
-// Отвечает исключительно за визуальное представление: вкладки агентов,
-// панель вывода метрик, панель настроек. Не хранит бизнес-логику и не знает
-// про Kernel - только строит виджеты, показывает то, что ей передали, и
-// сообщает наружу о действиях пользователя через сигналы.
-// ---------------------------------------------------------------------------
-
 namespace gui {
+    /**
+     * @class UIWindow
+    * @brief Отвечает исключительно за визуальное представление: панель вывода метрик и панель настроек.
+    * Не хранит бизнес-логику и не знает про Kernel - только строит виджеты,
+    * показывает то, что ей передали, и сообщает наружу о действиях пользователя через сигналы.
+     */
     class UIWindow final : public QWidget {
         Q_OBJECT
 
     public:
+        /**
+         * @brief Строит каркас окна и соединяем слоты со сигналами
+         * @param parent
+         */
         explicit UIWindow(QWidget* parent = nullptr);
 
-        // Вызывается снаружи (из MainWindow), чтобы обновить экран ----------
+        /**
+         * @brief Обновляет выпадающий список с вариантами выбора агентов
+         * @param names Список имен текущих агентов
+         */
         void setAgentNames(const QStringList& names);
+
+        /**
+         * @brief Устанавливает текущий активный вариант из выпадающего списка
+         * @param index Индекс имени агента из списка
+         */
         void setActiveAgentIndex(int index);
+
+        /**
+         * @brief Отображает на панели справа настройки выбранного агента
+         * @param name Имя этого агента
+         * @param info Конфигурация этого агента
+         */
         void showAgentSettings(const QString& name, const core::AgentInfo& info);
+
+        /**
+         * @brief Выводит на левой панели до 20 последних собранных данных метрик.
+         * Информация выводится построчно, в каждой строке находятся N пар {имя_метрики : значение},
+         * которые были собраны отдельным агентом
+         * @param metrics Таблица данных, готовая к выводу на экран
+         */
         void showMetrics(const QList<QList<agent::Metric>>& metrics);
 
-        signals:
-        // --- действия пользователя, наружу --------------------------------------
+        signals: // Действия пользователя, наружу
+        /**
+         * @brief @brief Оповещает класс MainWindow,
+         * когда пользователь выбрал вариант из выпадающего списка на правой панели,
+         * отвечающего за выбор отображения настроек конкретного агента.
+         * @param index Индекс этого агента из списка имен агентов, хранящийся внутри MainWindow
+         */
         void agentSelected(int index);
+
+        /**
+         * @brief Оповещает класс MainWindow, что был нажат чекбокс,
+         * ответственный за перевод выбранного агента в состояние сна или выход из него
+         * @param enabled Если чекбокс активирован (true), то агент работает,
+         * иначе переходит в состояние сна и перестает обновлять метрики и передавать в систему
+         */
         void agentEnabledChanged(bool enabled);
-        void applyRequested(const QString& agentName, int agentTypeIndex, const QList<core::MetricConfig>& metrics, long updateIntervalMs);
+
+        /**
+         * @brief Оповещает класс MainWindow, что была нажата кнопка "Применить",
+         * вследствие чего измененные пользователем настройки агента будут сохранены в программе
+         * @param agent_name Имя агента, чьи настройки были изменены
+         * @param index Индекс варианта из выпадающего списка типов агента, который выбрал пользователь
+         * @param metrics Список критических значений метрик
+         * @param timeout_ms Таймаут обновления метрик агентом (в мс)
+         */
+        void applyRequested(const QString& agent_name, int index, const QList<core::MetricConfig>& metrics, long timeout_ms);
 
     private slots:
+        /**
+         * @brief Обработчик сигнала нажатия на кнопку "Применить" на панели справа.
+         * Собирает все данные, которые ввел пользователь и посылает сигнал applyRequested
+         */
         void onApplyButtonClicked();
+
+        /**
+         * @brief Обработчик нажатия на кнопку "+".
+         * Добавляет еще одну строку интерфейса для изменения этой метрики агента
+         */
         void addMetricSettingRow(const QString& name = "", const QString& condition = ">", double value = 0.0) noexcept;
+
+        /**
+         * @brief Обрабатывает переключение нового варианта из выпадающего списка агентов на панели справа
+         * @param index Индекс выбранного варианта
+         */
         void onAgentSelectorChanged(int index) noexcept;
 
     private:
-        void buildMetricsPanel();
-        void buildSettingsPanel();
+        void buildMetricsPanel(); ///< Конструирует панель слева, которая служит для вывода собранных метрик
+        void buildSettingsPanel(); ///< Конструирует панель справа, которая служит для отображения настроек агентов
+
+        /**
+         * @brief Перестраивает панель слева, чтобы все актуальные данные смогли вместиться на экране
+         * @param metrics Массив актуальных метрик, хранящийся отдельными строками для 20 последних обновлений агентов
+         */
         void rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics);
 
         /**
@@ -73,10 +132,10 @@ namespace gui {
          * @brief Структура для хранения указателей на элементы динамической строки
          */
         struct MetricSettingRow {
-            QWidget* containerWidget;
-            QLineEdit* nameEdit;
-            QComboBox* conditionCombo;
-            QDoubleSpinBox* valueSpin;
+            QWidget* containerWidget; ///< Виджет строки метрики
+            QLineEdit* nameEdit; ///< Поле для изменения имени
+            QComboBox* conditionCombo; ///< Выпадающий список с возможными условиями достижения крит.значения (<, >, ==, !=, <=, >=)
+            QDoubleSpinBox* valueSpin; ///< Спинбокс для изменения значения критического значения
         };
 
         QSplitter* splitter_main; ///< Разделитель между областями экрана
@@ -84,27 +143,24 @@ namespace gui {
         QWidget* widget_metricsContainer; ///< Внутренний контейнер для сетки
 
         QVBoxLayout* layout_metricsContainer; ///< Слой внутри контейнера
-        QHBoxLayout* layout_rootLayout;
-        QVBoxLayout* layout_leftColumnLayout;
-        QHBoxLayout* layout_agentBarLayout;
-        QVBoxLayout* layout_metricsLayout;
-        QVBoxLayout* layout_outerLayout;
+        QHBoxLayout* layout_rootLayout; ///< Главный горизонтальный слой окна
+        QVBoxLayout* layout_leftColumnLayout; ///< Вертикальный макет для левой панели
+        QVBoxLayout* layout_metricsLayout; ///< Вертикальный слой внутри левой панели, который располагает выводимые данные сверху вниз
+        QVBoxLayout* layout_outerLayout; ///< Вертикальный слой внутри правой панели, который располагает элементы внутри строго сверху вниз
 
-        QButtonGroup* group_agentButtons;
-
-        QGroupBox* box_metricsPanelGroup;
-        QGroupBox* box_settingsGroup;
+        QGroupBox* box_metricsPanelGroup; ///< Визуальный блок с рамкой для выделения выводимых метрик в отдельную область
+        QGroupBox* box_settingsGroup; ///< Визуальный блок с рамкой для выделения настроек агента в отдельную область
 
         // Элементы управления для панели настроек
-        QComboBox* combo_agentSelector;
-        QCheckBox* box_enabledCheck;
-        QWidget* widget_settingsDetails; // Контейнер для настроек ниже чекбокса
-        QComboBox* combo_agentType;
-        QLineEdit* edit_agentName;
-        QSpinBox* box_intervalSpin;
-        QVBoxLayout* layout_metricsSettings;
-        QPushButton* button_addMetric;
-        QPushButton* button_applyButton;
+        QComboBox* combo_agentSelector; ///< Выпадающий список выбора агента
+        QCheckBox* box_enabledCheck; ///< Чекбокс активации работы агента
+        QWidget* widget_settingsDetails; ///< Контейнер для настроек ниже чекбокса
+        QComboBox* combo_agentType; ///< Выпадающий список выбора типа агента
+        QLineEdit* edit_agentName; ///< Текстовое поле для изменения имени агента
+        QSpinBox* box_intervalSpin; ///< Спинбокс для ввода таймаута обновления метрик агентом
+        QVBoxLayout* layout_metricsSettings; ///< Слой отображения динамически изменяемых настроек метрик
+        QPushButton* button_addMetric; ///< Кнопка добавления настройки метрики
+        QPushButton* button_applyButton; ///< Кнопка применения всех настроек из панели настроек
 
         QVector<MetricSettingRow> vector_dynamicMetrics; ///< Хранилище строк метрик
         QVector<QVector<QLabel*>> grid_metrics; ///< Двумерный массив виджетов
