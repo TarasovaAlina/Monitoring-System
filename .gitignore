@@ -1,0 +1,7 @@
+*.o
+
+/agents/
+/bin/
+
+*build*
+.idea
