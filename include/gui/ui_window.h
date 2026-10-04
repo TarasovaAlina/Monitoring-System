@@ -69,7 +69,7 @@ namespace gui {
          * которые были собраны отдельным агентом
          * @param metrics Таблица данных, готовая к выводу на экран
          */
-        void showMetrics(const QList<QList<agent::Metric>>& metrics) noexcept;
+        void showMetrics(const std::vector<std::vector<agent::Metric>>& metrics) noexcept;
 
         signals: // Действия пользователя, наружу
         /**
@@ -125,7 +125,7 @@ namespace gui {
          * @brief Перестраивает панель слева, чтобы все актуальные данные смогли вместиться на экране
          * @param metrics Массив актуальных метрик, хранящийся отдельными строками для 20 последних обновлений агентов
          */
-        void rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics) noexcept;
+        void rebuildMetricsGrid(const std::vector<std::vector<agent::Metric>>& metrics) noexcept;
 
         /**
          * @struct MetricSettingRow

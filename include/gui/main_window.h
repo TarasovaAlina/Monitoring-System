@@ -86,7 +86,7 @@ namespace gui {
         QStringList _agentNames; ///< Список имен агентов, которые работают в ядре
         int _currentAgentIndex; ///< Индекс агента в списке, который открыт во вкладке настроек агентов
 
-        QList<QList<agent::Metric>> _metrics_list; ///< Список метрик, которые должны быть показаны в UI
+        std::vector<std::vector<agent::Metric>> _metrics_list; ///< Список метрик, которые должны быть показаны в UI
     };
 }
 

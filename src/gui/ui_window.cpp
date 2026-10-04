@@ -127,7 +127,7 @@ namespace gui {
         layout_outerLayout->addStretch(1);
     }
 
-    void UIWindow::rebuildMetricsGrid(const QList<QList<agent::Metric>>& metrics) noexcept {
+    void UIWindow::rebuildMetricsGrid(const std::vector<std::vector<agent::Metric>>& metrics) noexcept {
         // Удаляем старый контейнер со всеми внутренними Layout и виджетами
         if (widget_metricsContainer) {
             widget_metricsContainer->deleteLater();
@@ -312,7 +312,7 @@ namespace gui {
         }
     }
 
-    void UIWindow::showMetrics(const QList<QList<agent::Metric>>& metrics) noexcept {
+    void UIWindow::showMetrics(const std::vector<std::vector<agent::Metric>>& metrics) noexcept {
         // 1. Проверяем, совпадает ли размерность интерфейса с пришедшими данными
         bool needRebuild = false;
         if (metrics.size() != grid_metrics.size()) {
