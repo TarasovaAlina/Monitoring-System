@@ -1,4 +1,5 @@
 #include "core/agent_service.h"
+#include <mutex>
 
 namespace core {
     AgentService::~AgentService() noexcept {
@@ -10,6 +11,9 @@ namespace core {
     }
 
     void AgentService::update(const std::vector<ConfigInfo> &agent_data_list) noexcept {
+        // Захватываем мьютекс на запись
+        std::unique_lock<std::shared_mutex> lock(_agents_mutex);
+
         // Проверяем, были ли такие агенты загружены ранее
         for (auto &config: agent_data_list) {
             if (!_agents_list.contains(config.agentName)) {
@@ -55,6 +59,9 @@ namespace core {
     }
 
     std::unique_ptr<AgentHandler>& AgentService::getAgent(const std::string &name) {
+        // Захватываем мьютекс на чтение с помощью мягкой блокировки
+        std::shared_lock<std::shared_mutex> lock(_agents_mutex);
+
         for (auto& agent: _agents_list) {
             if (agent.first == name) {
                 // Передаем ссылку на указатель обработчика агента
@@ -66,7 +73,10 @@ namespace core {
         throw std::logic_error("Agent \"" + name + "\" not found");
     }
 
-    std::vector<agent::Metric> AgentService::collectMetrics() noexcept {
+    std::vector<agent::Metric> AgentService::collectMetrics() const noexcept {
+        // Захватываем мьютекс на чтение с помощью мягкой блокировки
+        std::shared_lock<std::shared_mutex> lock(_agents_mutex);
+
         std::vector<agent::Metric> metrics{};
         metrics.reserve(_agents_list.size() * 3);
 
@@ -80,6 +90,9 @@ namespace core {
     }
 
     std::vector<std::string> AgentService::agentsNamesList() const noexcept {
+        // Захватываем мьютекс на чтение с помощью мягкой блокировки
+        std::shared_lock<std::shared_mutex> lock(_agents_mutex);
+
         std::vector<std::string> names{};
         names.reserve(_agents_list.size());
 
@@ -91,6 +104,9 @@ namespace core {
     }
 
     void AgentService::changeName(const std::string &name, const std::string &new_name) noexcept {
+        // Захватываем мьютекс на запись
+        std::unique_lock<std::shared_mutex> lock(_agents_mutex);
+
         // Извлекаем узел без лишних копирований
         auto node = _agents_list.extract(name);
 
@@ -101,6 +117,9 @@ namespace core {
     }
 
     std::vector<MetricConfig> &AgentService::criticalMetricValues(const std::string &name) noexcept {
+        // Захватываем мьютекс на запись
+        std::unique_lock<std::shared_mutex> lock(_agents_mutex);
+
         return _agents_list[name].critical_metrics_values;
     }
 }

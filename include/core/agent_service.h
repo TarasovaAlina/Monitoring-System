@@ -13,6 +13,7 @@
 #include "agent_handler.h"
 #include <unordered_map>
 #include <thread>
+#include <shared_mutex>
 
 namespace core {
 
@@ -52,7 +53,7 @@ namespace core {
          * @brief Передает собранные метрики от всех активных агентов
          * @return Список данных в виде имя_метрики : значение
          */
-        std::vector<agent::Metric> collectMetrics() noexcept;
+        std::vector<agent::Metric> collectMetrics() const noexcept;
 
         /**
          * @brief Сообщает, какие агенты загружены в данный момент.
@@ -75,6 +76,7 @@ namespace core {
         std::vector<MetricConfig>& criticalMetricValues(const std::string& name) noexcept;
     private:
         std::unordered_map<std::string, AgentCore> _agents_list; ///< Агенты, которые работают в данный момент
+        mutable std::shared_mutex _agents_mutex; ///< Мьютекс для потокобезопасной работы с _agents_list
     };
 }
 
