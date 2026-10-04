@@ -103,25 +103,4 @@ namespace core {
     std::vector<MetricConfig> &AgentService::criticalMetricValues(const std::string &name) noexcept {
         return _agents_list[name].critical_metrics_values;
     }
-
-    void AgentService::enable(const std::string &name) {
-        auto agent = _agents_list.find(name);
-
-        if (agent == _agents_list.end()) {
-            throw std::logic_error("Agent \"" + name + "\" not found");
-        }
-
-        agent->second.agent->setSleepMode(false);
-    }
-
-    void AgentService::disable(const std::string &name) {
-        auto agent = _agents_list.find(name);
-
-        if (agent == _agents_list.end()) {
-            throw std::logic_error("Agent \"" + name + "\" not found");
-        }
-
-        agent->second.agent->setSleepMode(true);
-    }
-
 }

@@ -73,18 +73,6 @@ namespace core {
          * @param name Имя агента, у которого берется информация
          */
         std::vector<MetricConfig>& criticalMetricValues(const std::string& name) noexcept;
-
-        /**
-         * @brief Включает конкретный агент (делает его активным)
-         * @param name Имя этого агента
-         */
-        void enable(const std::string& name);
-
-        /**
-         * @brief Выключает конкретный агент (делает его неактивным)
-         * @param name Имя этого агента
-         */
-        void disable(const std::string& name);
     private:
         std::unordered_map<std::string, AgentCore> _agents_list; ///< Агенты, которые работают в данный момент
     };
