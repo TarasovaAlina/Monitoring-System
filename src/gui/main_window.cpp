@@ -63,6 +63,16 @@ namespace gui {
         _ui->setAgentNames(_agentNames);
     }
 
+    void MainWindow::updatingLogs(const std::vector<agent::Metric> &metrics_list) noexcept {
+        _metrics_list.insert(_metrics_list.end(), metrics_list);
+
+        if (_metrics_list.size() > NUMBER_DISPLAY_ROWS) {
+            _metrics_list.erase(_metrics_list.begin());
+        }
+
+        _ui->showMetrics(_metrics_list);
+    }
+
     QString MainWindow::currentAgentName() const noexcept {
         return _agentNames.value(_currentAgentIndex);
     }
