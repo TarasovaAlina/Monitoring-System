@@ -75,7 +75,7 @@ namespace core {
          * @param name Имя агента, о котором нужно получить данные
          * @return Подробная информация в виде структуры
          */
-        AgentInfo getAgentInfo(const std::string& name) noexcept;
+        AgentInfo getAgentInfo(const std::string& name) const noexcept;
 
         /**
          * @brief Меняет имя конкретного агента
@@ -142,7 +142,7 @@ namespace core {
         /**
          * @return true, если при создании ядра не произошло ошибок
          */
-        bool isCorrect() noexcept;
+        bool isCorrect() const noexcept;
 
     private:
         /**

@@ -24,7 +24,7 @@ namespace core {
         return _agent_service->agentsNamesList();
     }
 
-    AgentInfo Kernel::getAgentInfo(const std::string &name) noexcept {
+    AgentInfo Kernel::getAgentInfo(const std::string &name) const noexcept {
         const auto& agent = _agent_service->getAgent(name);
 
         return AgentInfo {
@@ -70,7 +70,7 @@ namespace core {
         _agent_service->getAgent(name)->setSleepMode(false);
     }
 
-    bool Kernel::isCorrect() noexcept {
+    bool Kernel::isCorrect() const noexcept {
         return _work_flag.load();
     }
 
