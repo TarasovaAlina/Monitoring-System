@@ -11,7 +11,7 @@ namespace gui {
     }
 
     void AgentPoller::fetchAgents() noexcept {
-        if (_kernel) {
+        if (!_kernel) {
             return;
         }
 

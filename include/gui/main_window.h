@@ -62,12 +62,13 @@ namespace gui {
          */
         void reloadAgentList(const QStringList& agents) noexcept;
 
-    private:
         /**
-         * @brief Запускает ожидание, когда в файл с логами запишется новая информация
+         * @brief Обновляет массив данных метрик новыми значениями, полученными от LogReader в Worker классе.
+         * Хранится не больше NUMBER_DISPLAY_ROWS, при добавлении сверх удаляются самые старые записи
          */
         void updatingLogs(const std::vector<agent::Metric>& metrics_list) noexcept;
 
+    private:
         /**
          * @brief Отображает на во вкладке агента его текущие настроки
          */
