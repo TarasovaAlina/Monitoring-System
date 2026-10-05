@@ -27,8 +27,6 @@ namespace gui {
         connect(_ui, &UIWindow::agentEnabledChanged, this, &MainWindow::onAgentEnabledChanged);
         connect(_ui, &UIWindow::applyRequested, this, &MainWindow::onApplyRequested);
 
-        reloadAgentList();
-
         _ui->setActiveAgentIndex(0);
         pushCurrentAgentToUI();
 
@@ -41,7 +39,7 @@ namespace gui {
         _agent_poller = new AgentPoller(_kernel.get());
         _agent_poller->moveToThread(_agent_poller_thread);
 
-        connect(_agent_poller, &AgentPoller::agentsListFetched, this, &MainWindow::onAgentEnabledChanged);
+        connect(_agent_poller, &AgentPoller::agentsListFetched, this, &MainWindow::reloadAgentList);
         connect(_agent_poller_thread, &QThread::finished, _agent_poller_thread, &QObject::deleteLater);
 
         _log_reader_thread->start();
@@ -56,21 +54,19 @@ namespace gui {
         _agent_poller_thread->wait();
     }
 
-    void MainWindow::reloadAgentList() noexcept {
-        _agentNames.clear();
+    void MainWindow::reloadAgentList(const QStringList& agents) noexcept {
+        _agent_names = agents;
+
         if (!_kernel)
             return;
 
-        for (const std::string& name : _kernel->agentsList())
-            _agentNames.append(QString::fromStdString(name));
-
-        if (_agentNames.isEmpty()) {
+        if (_agent_names.isEmpty()) {
             // Чтобы окно не оказалось пустым, пока агенты ещё не загрузились
             // фоновым потоком поиска (_searchNewAgents).
-            _agentNames = { QStringLiteral("<Нет доступных агентов>") };
+            _agent_names = { QStringLiteral("<Нет доступных агентов>") };
         }
 
-        _ui->setAgentNames(_agentNames);
+        _ui->setAgentNames(_agent_names);
     }
 
     void MainWindow::updatingLogs(const std::vector<agent::Metric> &metrics_list) noexcept {
@@ -84,11 +80,11 @@ namespace gui {
     }
 
     QString MainWindow::currentAgentName() const noexcept {
-        return _agentNames.value(_currentAgentIndex);
+        return _agent_names.value(_currentAgentIndex);
     }
 
     void MainWindow::onAgentSelected(int index) noexcept {
-        if (index < 0 || index >= _agentNames.size())
+        if (index < 0 || index >= _agent_names.size())
             return;
 
         _currentAgentIndex = index;
@@ -96,7 +92,7 @@ namespace gui {
     }
 
     void MainWindow::pushCurrentAgentToUI() const noexcept {
-        if (!_kernel || _agentNames.isEmpty())
+        if (!_kernel || _agent_names.isEmpty())
             return;
 
         const std::string agentName = currentAgentName().toStdString();
@@ -106,7 +102,7 @@ namespace gui {
     }
 
     void MainWindow::onAgentEnabledChanged(bool enabled) const noexcept {
-        if (!_kernel || _agentNames.isEmpty())
+        if (!_kernel || _agent_names.isEmpty())
             return;
 
         const std::string agentName = currentAgentName().toStdString();
@@ -122,7 +118,7 @@ namespace gui {
     void MainWindow::onApplyRequested(const QString& new_name, int index,
         const QList<core::MetricConfig>& critical_metrics_list, long timeout_ms) const noexcept {
 
-        if (!_kernel || _agentNames.isEmpty())
+        if (!_kernel || _agent_names.isEmpty())
             return;
 
         const std::string curAgentName = currentAgentName().toStdString();

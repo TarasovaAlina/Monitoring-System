@@ -57,12 +57,12 @@ namespace gui {
             const QList<core::MetricConfig>& critical_metrics_list,
             long timeout_ms) const noexcept;
 
-    private:
         /**
          * @brief Обновляет вкладку с агентами, запрашивая у _kernel актуальный список агентов
          */
-        void reloadAgentList() noexcept;
+        void reloadAgentList(const QStringList& agents) noexcept;
 
+    private:
         /**
          * @brief Запускает ожидание, когда в файл с логами запишется новая информация
          */
@@ -86,7 +86,7 @@ namespace gui {
         QThread* _log_reader_thread; ///< Поток, в котором происходит обработка LogReader класса
         QThread* _agent_poller_thread; ///< Поток, в котором происходит цикличное получение данных из Kernel
 
-        QStringList _agentNames; ///< Список имен агентов, которые работают в ядре
+        QStringList _agent_names; ///< Список имен агентов, которые работают в ядре
         int _currentAgentIndex; ///< Индекс агента в списке, который открыт во вкладке настроек агентов
 
         std::vector<std::vector<agent::Metric>> _metrics_list; ///< Список метрик, которые должны быть показаны в UI
