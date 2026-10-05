@@ -70,12 +70,14 @@ namespace gui {
 
         // Чекбокс активности агента (сразу под выбором агента)
         box_enabledCheck = new QCheckBox(QStringLiteral("Агент активен"), box_settingsGroup);
+        box_enabledCheck->setChecked(true);
         layout_outerLayout->addWidget(box_enabledCheck);
 
-        // Переключаем видимость контейнера с настройками при изменении состояния чекбокса
-        connect(box_enabledCheck, &QCheckBox::toggled, widget_settingsDetails, &QWidget::setVisible);
         // Отправляем сигнал наружу в MainWindow
-        connect(box_enabledCheck, &QCheckBox::toggled, this, [this]() { emit agentEnabledChanged(box_enabledCheck->checkState()); });
+        connect(box_enabledCheck, &QCheckBox::toggled, this, [this]() {
+            widget_settingsDetails->setVisible(box_enabledCheck->checkState());
+            emit agentEnabledChanged(box_enabledCheck->checkState());
+        });
 
         // -------------------------------------------------------------------
         //   Контейнер для всех остальных настроек, находящихся ниже чекбокса

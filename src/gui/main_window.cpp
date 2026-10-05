@@ -56,16 +56,6 @@ namespace gui {
 
     void MainWindow::reloadAgentList(const QStringList& agents) noexcept {
         _agent_names = agents;
-
-        if (!_kernel)
-            return;
-
-        if (_agent_names.isEmpty()) {
-            // Чтобы окно не оказалось пустым, пока агенты ещё не загрузились
-            // фоновым потоком поиска (_searchNewAgents).
-            _agent_names = { QStringLiteral("<Нет доступных агентов>") };
-        }
-
         _ui->setAgentNames(_agent_names);
     }
 
