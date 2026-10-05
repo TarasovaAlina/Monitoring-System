@@ -86,6 +86,7 @@ namespace gui {
         QThread* _log_reader_thread; ///< Поток, в котором происходит обработка LogReader класса
         QThread* _agent_poller_thread; ///< Поток, в котором происходит цикличное получение данных из Kernel
 
+        mutable std::shared_mutex _agent_names_mutex; ///< Мьютекс для обеспечения потокобезопасной работы со списком имен агентов
         QStringList _agent_names; ///< Список имен агентов, которые работают в ядре
         int _currentAgentIndex; ///< Индекс агента в списке, который открыт во вкладке настроек агентов
 

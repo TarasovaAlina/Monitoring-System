@@ -55,6 +55,7 @@ namespace gui {
     }
 
     void MainWindow::reloadAgentList(const QStringList& agents) noexcept {
+        std::unique_lock<std::shared_mutex> lock(_agent_names_mutex);
         _agent_names = agents;
         _ui->setAgentNames(_agent_names);
     }
@@ -70,10 +71,14 @@ namespace gui {
     }
 
     QString MainWindow::currentAgentName() const noexcept {
+        std::shared_lock<std::shared_mutex> lock(_agent_names_mutex);
+
         return _agent_names.value(_currentAgentIndex);
     }
 
     void MainWindow::onAgentSelected(int index) noexcept {
+        std::shared_lock<std::shared_mutex> lock(_agent_names_mutex);
+
         if (index < 0 || index >= _agent_names.size())
             return;
 
@@ -82,6 +87,8 @@ namespace gui {
     }
 
     void MainWindow::pushCurrentAgentToUI() const noexcept {
+        std::shared_lock<std::shared_mutex> lock(_agent_names_mutex);
+
         if (!_kernel || _agent_names.isEmpty())
             return;
 
@@ -92,6 +99,7 @@ namespace gui {
     }
 
     void MainWindow::onAgentEnabledChanged(bool enabled) const noexcept {
+        std::shared_lock<std::shared_mutex> lock(_agent_names_mutex);
         if (!_kernel || _agent_names.isEmpty())
             return;
 
@@ -107,6 +115,7 @@ namespace gui {
 
     void MainWindow::onApplyRequested(const QString& new_name, int index,
         const QList<core::MetricConfig>& critical_metrics_list, long timeout_ms) const noexcept {
+        std::shared_lock<std::shared_mutex> lock(_agent_names_mutex);
 
         if (!_kernel || _agent_names.isEmpty())
             return;
