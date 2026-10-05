@@ -71,7 +71,7 @@ std::vector<ConfigInfo> ConfigService::load() const {
                 throw std::runtime_error("Invalid metric operator");
             }
 
-            configInfo.metricConfig_.push_back(
+            configInfo.metricConfig.push_back(
                 { target, Threshold(operation, value) }
             );
         }
@@ -149,11 +149,11 @@ const AgentType ConfigService::getAgentType(const std::string& agentType) const 
     AgentType agentTypeRes{};
 
     if (agentType == "CPU_AGENT")
-        agentTypeRes = CPU_AGENT;
+        agentTypeRes = agent::CPU_AGENT;
     else if (agentType == "MEMORY_AGENT")
-        agentTypeRes = MEMORY_AGENT;
+        agentTypeRes = agent::MEMORY_AGENT;
     else if (agentType == "NETWORK_AGENT")
-        agentTypeRes = NETWORK_AGENT;
+        agentTypeRes = agent::NETWORK_AGENT;
     
     return agentTypeRes;
 }
