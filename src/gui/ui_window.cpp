@@ -75,7 +75,7 @@ namespace gui {
         // Переключаем видимость контейнера с настройками при изменении состояния чекбокса
         connect(box_enabledCheck, &QCheckBox::toggled, widget_settingsDetails, &QWidget::setVisible);
         // Отправляем сигнал наружу в MainWindow
-        connect(box_enabledCheck, &QCheckBox::toggled, this, &UIWindow::agentEnabledChanged);
+        connect(box_enabledCheck, &QCheckBox::toggled, this, [this]() { emit agentEnabledChanged(box_enabledCheck->checkState()); });
 
         // -------------------------------------------------------------------
         //   Контейнер для всех остальных настроек, находящихся ниже чекбокса

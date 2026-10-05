@@ -71,7 +71,7 @@ namespace gui {
          */
         void showMetrics(const std::vector<std::vector<agent::Metric>>& metrics) noexcept;
 
-        signals: // Действия пользователя, наружу
+    signals: // Действия пользователя, наружу
         /**
          * @brief @brief Оповещает класс MainWindow,
          * когда пользователь выбрал вариант из выпадающего списка на правой панели,
@@ -106,18 +106,18 @@ namespace gui {
         void onApplyButtonClicked() const noexcept;
 
         /**
-         * @brief Обработчик нажатия на кнопку "+".
-         * Добавляет еще одну строку интерфейса для изменения этой метрики агента
-         */
-        void addMetricSettingRow(const QString& name = "", const QString& condition = ">", double value = 0.0) noexcept;
-
-        /**
          * @brief Обрабатывает переключение нового варианта из выпадающего списка агентов на панели справа
          * @param index Индекс выбранного варианта
          */
         void onAgentSelectorChanged(int index) noexcept;
 
     private:
+        /**
+         * @brief Обработчик нажатия на кнопку "+".
+         * Добавляет еще одну строку интерфейса для изменения этой метрики агента
+         */
+        void addMetricSettingRow(const QString& name = "", const QString& condition = ">", double value = 0.0) noexcept;
+
         void buildMetricsPanel() noexcept; ///< Конструирует панель слева, которая служит для вывода собранных метрик
         void buildSettingsPanel() noexcept; ///< Конструирует панель справа, которая служит для отображения настроек агентов
 
