@@ -20,7 +20,7 @@ namespace gui {
          * @brief Сигнал к MainWindow о том, чтобы обновить текущий список агентов
          * @param agents Список имен агентов, которые в данный момент загружены и работают в Kernel
          */
-        void agentsListFetched(const QStringList& agents) noexcept;
+        void agentsListFetched(const QStringList& agents);
 
     private:
         QTimer* _timer; ///< Таймер, который обеспечивает периодическое получение данных от Kernel

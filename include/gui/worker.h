@@ -20,7 +20,7 @@ namespace gui {
          * @brief Сигнал к MainWindow о том, чтобы обновить таблицу метрик для вывода на UI
          * @param metricsList Список метрик, считанный из файла с логами
          */
-        void updateMetricsList(const std::vector<agent::Metric>& metricsList) noexcept;
+        void updateMetricsList(const std::vector<agent::Metric>& metricsList);
 
     private:
         QTimer* _timer; ///< Таймер, который обеспечивает периодическую работу класса LogReader

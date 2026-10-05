@@ -78,7 +78,7 @@ namespace gui {
          * отвечающего за выбор отображения настроек конкретного агента.
          * @param index Индекс этого агента из списка имен агентов, хранящийся внутри MainWindow
          */
-        void agentSelected(int index) noexcept;
+        void agentSelected(int index);
 
         /**
          * @brief Оповещает класс MainWindow, что был нажат чекбокс,
@@ -86,7 +86,7 @@ namespace gui {
          * @param enabled Если чекбокс активирован (true), то агент работает,
          * иначе переходит в состояние сна и перестает обновлять метрики и передавать в систему
          */
-        void agentEnabledChanged(bool enabled) noexcept;
+        void agentEnabledChanged(bool enabled);
 
         /**
          * @brief Оповещает класс MainWindow, что была нажата кнопка "Применить",
@@ -96,7 +96,7 @@ namespace gui {
          * @param metrics Список критических значений метрик
          * @param timeout_ms Таймаут обновления метрик агентом (в мс)
          */
-        void applyRequested(const QString& agent_name, int index, const QList<core::MetricConfig>& metrics, long timeout_ms) const noexcept;
+        void applyRequested(const QString& agent_name, int index, const QList<core::MetricConfig>& metrics, long timeout_ms) const;
 
     private slots:
         /**
