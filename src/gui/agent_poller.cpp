@@ -1,4 +1,5 @@
 #include "gui/agent_poller.h"
+#include <QMessageBox>
 
 namespace gui {
     AgentPoller::AgentPoller(core::Kernel *kernel, QObject *parent)
@@ -18,6 +19,8 @@ namespace gui {
         for (const std::string& name : _kernel->agentsList()) {
             names.append(QString::fromStdString(name));
         }
+
+        qDebug() << "[AgentPoller] Получен список имен агентов от Kernel";
 
         // Отправляем готовый список в главный поток
         emit agentsListFetched(names);

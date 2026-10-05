@@ -58,6 +58,8 @@ namespace gui {
         std::unique_lock<std::shared_mutex> lock(_agent_names_mutex);
         _agent_names = agents;
         _ui->setAgentNames(_agent_names);
+
+        qDebug() << "[MainWindow] Обновлен список агентов в UI";
     }
 
     void MainWindow::updatingLogs(const std::vector<agent::Metric> &metrics_list) noexcept {
@@ -68,6 +70,8 @@ namespace gui {
         }
 
         _ui->showMetrics(_metrics_list);
+
+        qDebug() << "[MainWindow] Отображены новые метрики в левой панели";
     }
 
     QString MainWindow::currentAgentName() const noexcept {
@@ -83,6 +87,7 @@ namespace gui {
             return;
 
         _currentAgentIndex = index;
+        qDebug() << "[MainWindow] Выбран агент index = " << index;
         pushCurrentAgentToUI();
     }
 
@@ -96,6 +101,7 @@ namespace gui {
         core::AgentInfo info = _kernel->getAgentInfo(agentName);
 
         _ui->showAgentSettings(QString::fromStdString(agentName), info);
+        qDebug() << "[MainWindow] Обновлены данные на панели настроек агента";
     }
 
     void MainWindow::onAgentEnabledChanged(bool enabled) const noexcept {
@@ -107,9 +113,11 @@ namespace gui {
 
         if (enabled) {
             _kernel->connectionAgent(agentName);
+            qDebug() << "[MainWindow] Агент " << QString::fromStdString(agentName) << " стал активен";
         }
         else {
             _kernel->disconnectionAgent(agentName);
+            qDebug() << "[MainWindow] Агент " << QString::fromStdString(agentName) << " отключен";
         }
     }
 
@@ -124,11 +132,13 @@ namespace gui {
 
         _kernel->changeAgentSetting(curAgentName, new_name.toStdString());
         _kernel->changeAgentSetting(curAgentName, timeout_ms);
-        
+
         // Позже заменить на вычисление типа через получения значения от выпадающего списка
         _kernel->changeAgentSetting(curAgentName, static_cast<agent::AgentType>(index));
 
         const std::vector<core::MetricConfig> vec_metrics(critical_metrics_list.constBegin(), critical_metrics_list.constEnd());
         _kernel->changeAgentSetting(curAgentName, vec_metrics);
+
+        qDebug() << "[MainWindow] Настройки применены к текущему агенту" << QString::fromStdString(curAgentName);
     }
 }

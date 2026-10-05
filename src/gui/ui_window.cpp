@@ -31,7 +31,6 @@ namespace gui {
     }
 
     void UIWindow::setAgentNames(const QStringList& names) noexcept {
-
         const QSignalBlocker blocker(combo_agentSelector);
         combo_agentSelector->clear();
         combo_agentSelector->addItems(names);
@@ -56,6 +55,8 @@ namespace gui {
 
         layout_metricsLayout->addWidget(widget_metricsContainer);
         layout_metricsLayout->addStretch(1); // Пружина, прижимающая контейнер к верху
+
+        qDebug() << "[UIWindow] Собрана левая панель для отображения данных метрик";
     }
 
     void UIWindow::buildSettingsPanel() noexcept {
@@ -127,6 +128,8 @@ namespace gui {
         // Добавляем контейнер в основной слой панели настроек
         layout_outerLayout->addWidget(widget_settingsDetails);
         layout_outerLayout->addStretch(1);
+
+        qDebug() << "[UIWindow] Собрана правая панель для отображения настроек агентов";
     }
 
     void UIWindow::rebuildMetricsGrid(const std::vector<std::vector<agent::Metric>>& metrics) noexcept {
