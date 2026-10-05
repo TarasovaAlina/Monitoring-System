@@ -18,7 +18,7 @@ namespace core {
         for (auto &config: agent_data_list) {
             if (!_agents_list.contains(config.agentName)) {
                 // Загружаем новый агент
-                std::string path_agent = "lib" + config.agentName + ".so";
+                std::string path_agent = "agents/lib" + config.agentName + ".so";
                 _agents_list[config.agentName] = AgentCore {};
 
                 _agents_list[config.agentName].agent =
