@@ -9,7 +9,6 @@ namespace gui {
     : QMainWindow(parent)
     , _log_reader_thread(new QThread(this))
     , _agent_poller_thread(new QThread(this))
-    , _is_running(1)
     , _currentAgentIndex(0) {
         setWindowTitle(QStringLiteral("Системный монитор"));
         resize(900, 520);
