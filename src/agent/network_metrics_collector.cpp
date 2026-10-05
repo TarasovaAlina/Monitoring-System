@@ -61,7 +61,7 @@ namespace agent {
                 ss >> transmit_bytes;
 
                 // Записываем считанные данные в словарь
-                result[label] = std::make_pair<unsigned long, unsigned long>{receive_bytes, transmit_bytes};
+                result[label] = {receive_bytes, transmit_bytes};
             }
         }
 
