@@ -36,7 +36,6 @@ namespace core {
 
         agent::AgentType type() const noexcept; ///< Доступ к приватному полю _type
         long& timeout() noexcept; ///< Доступ к приватному полю _timeout
-        std::vector<agent::Metric>& metrics() noexcept; ///< Доступ к текущим параметрам метрик
         long timeElapsedSinceStart() const noexcept; ///< Время в мс, прошедшее с создания этого агента
         std::vector<std::string>& metricNamesList() noexcept; ///< Доступ к списку метрик, значения которых агент должен обновлять
         bool isActive() const noexcept; ///< Доступ к приватному атомарному флагу _sleeping
@@ -50,8 +49,7 @@ namespace core {
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна
 
-        std::vector<agent::Metric> _metrics; ///< Текущие значения метрик
-        std::vector<std::string> _metric_names_list;
+        std::vector<std::string> _metric_names_list; ///< Список метрик, которые должен собирать агент
         agent::AgentType _type; ///< Тип агента
         long _timeout; ///< Таймаут обновления
         std::chrono::steady_clock::time_point _start_time; ///< Время создания агента

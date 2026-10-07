@@ -73,22 +73,6 @@ namespace core {
         throw std::logic_error("Agent \"" + name + "\" not found");
     }
 
-    std::vector<agent::Metric> AgentService::collectMetrics() const noexcept {
-        // Захватываем мьютекс на чтение с помощью мягкой блокировки
-        std::shared_lock<std::shared_mutex> lock(_agents_mutex);
-
-        std::vector<agent::Metric> metrics{};
-        metrics.reserve(_agents_list.size() * 3);
-
-        for (auto& agent: _agents_list) {
-            metrics.insert(metrics.end(),
-                agent.second.agent->metrics().begin(),
-                agent.second.agent->metrics().end());
-        }
-
-        return metrics;
-    }
-
     std::vector<std::string> AgentService::agentsNamesList() const noexcept {
         // Захватываем мьютекс на чтение с помощью мягкой блокировки
         std::shared_lock<std::shared_mutex> lock(_agents_mutex);

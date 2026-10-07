@@ -75,10 +75,6 @@ namespace core {
         return _timeout;
     }
 
-    std::vector<agent::Metric> &AgentHandler::metrics() noexcept {
-        return _metrics;
-    }
-
     long AgentHandler::timeElapsedSinceStart() const noexcept {
         // Вычисляем, сколько времени прошло с создания агента
         auto end_time = std::chrono::steady_clock::now();

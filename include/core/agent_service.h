@@ -50,12 +50,6 @@ namespace core {
         std::unique_ptr<AgentHandler>& getAgent(const std::string& name);
 
         /**
-         * @brief Передает собранные метрики от всех активных агентов
-         * @return Список данных в виде имя_метрики : значение
-         */
-        std::vector<agent::Metric> collectMetrics() const noexcept;
-
-        /**
          * @brief Сообщает, какие агенты загружены в данный момент.
          * Необходимо для того, чтобы потом получать информацию по этим агентам
          * @return Список имен агентов
