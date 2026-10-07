@@ -16,4 +16,15 @@ namespace agent {
     const std::vector<Metric> Agent::updateMetrics(const std::vector<std::string>& metric_names_list) const noexcept {
         return _metrics_collector->update(metric_names_list);
     }
+
+    // Экспорт C-функций для возможной загрузки объекта Agent из динамической библиотеки
+    extern "C" {
+        __attribute__((visibility("default"))) IAgent* CreateAgent(AgentType type) {
+            return new Agent(type);
+        }
+
+        __attribute__((visibility("default"))) void DestroyAgent(IAgent* agent) {
+            delete agent;
+        }
+    }
 }

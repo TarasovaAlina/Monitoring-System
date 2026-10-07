@@ -60,16 +60,8 @@ namespace agent {
         std::unique_ptr<IMetricsCollector> _metrics_collector; ///< Сборщик метрик, который имплементирует в себе логику получения данных
     };
 
-    // Экспорт C-функций для возможной загрузки объекта Agent из динамической библиотеки
-    extern "C" {
-        __attribute__((visibility("default"))) IAgent* CreateAgent(AgentType type) {
-            return new Agent(type);
-        }
-
-        __attribute__((visibility("default"))) void DestroyAgent(IAgent* agent) {
-            delete agent;
-        }
-    }
+    typedef IAgent* (*CreateAgentFunc)(AgentType);
+    typedef void (*DestroyAgentFunc)(IAgent*);
 }
 
 #endif
