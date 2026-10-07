@@ -153,7 +153,6 @@ namespace core {
 
         std::unique_ptr<AgentService> _agent_service; ///< Управляет агентами, загруженными как динамические библиотеки
         std::unique_ptr<ConfigService> _config_service; ///< Считывает конфиги агентов и передает внутренние данные
-        std::unique_ptr<tools::Logger> _logger; ///< Отвечает за запись данных в журнал
 
         std::thread _search_agents_thread; ///< Хранит поток, в котором происходит поиск агентов в директории ./agents
         std::atomic<bool> _work_flag; ///< Атомарный флаг, который показывает, нужно ли продолжать работу потоков

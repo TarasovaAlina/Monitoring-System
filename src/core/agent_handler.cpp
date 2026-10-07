@@ -8,7 +8,8 @@ namespace core {
     , _sleeping(false)
     , _type(type)
     , _timeout(milliseconds)
-    , _agent(nullptr, nullptr) {
+    , _agent(nullptr, nullptr)
+    , _logger(std::make_unique<tools::Logger>()) {
         _shared_lib = dlopen(path.c_str(), RTLD_LAZY);
 
         if (_shared_lib == nullptr) {
@@ -35,7 +36,8 @@ namespace core {
         while (_running.load()) {
             // Обновление метрик только если агент находится в активном состоянии
             if (!_sleeping.load()) {
-                _metrics = _agent->updateMetrics(_metric_names_list);
+                auto data = _agent->updateMetrics(_metric_names_list);
+                _logger->log(data);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(_timeout));
             }

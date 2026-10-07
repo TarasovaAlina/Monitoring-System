@@ -7,7 +7,6 @@ namespace core {
             // Пытаемся создать вспомогательные инструменты
             _agent_service = std::make_unique<AgentService>();
             _config_service = std::make_unique<ConfigService>();
-            _logger = std::make_unique<tools::Logger>();
 
             _search_agents_thread = std::thread(&Kernel::_searchNewAgents, this);
 

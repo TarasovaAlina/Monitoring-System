@@ -7,6 +7,7 @@
 #include <string>
 
 #include "agent/agent.h"
+#include "tools/logger.h"
 
 namespace core {
     /**
@@ -44,6 +45,7 @@ namespace core {
         void* _shared_lib; ///< Загруженная динамическая библиотека агента
         std::pair<CreateAgentFunc, DestroyAgentFunc> _agent_func; ///< Функции фабрики, которые используются для создания агентов
         std::unique_ptr<agent::IAgent, DestroyAgentFunc> _agent; ///< Агент, загруженный из динамической библиотеки
+        std::unique_ptr<tools::Logger> _logger; ///< Записывает актуальные данные метрик в лог
 
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна
