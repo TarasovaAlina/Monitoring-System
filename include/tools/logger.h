@@ -37,6 +37,7 @@ namespace tools {
         void log(const std::vector<agent::Metric>& metrics) noexcept;
 
     private:
+        static std::mutex _log_mutex; ///< Общий мьютекс, чтобы контролировать множественную запись в один лог
         std::ofstream _file; ///< Файловый поток, ассоциированный с журналом
     };
 }

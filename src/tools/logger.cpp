@@ -2,6 +2,8 @@
 #include <chrono>
 
 namespace tools {
+    std::mutex Logger::_log_mutex;
+
     Logger::Logger() {
         auto time = std::chrono::system_clock::now();
         std::time_t now_date = std::chrono::system_clock::to_time_t(time);
@@ -57,8 +59,10 @@ namespace tools {
             stream_line << " |";
         }
 
-        stream_line << std::endl;
-        _file << stream_line.str();
+        // Потокобезопасная запись
+        _log_mutex.lock();
+        _file << stream_line.str() << std::endl;
+        _log_mutex.unlock();
     }
 
 }
