@@ -130,7 +130,6 @@ namespace gui {
 
         const std::string curAgentName = currentAgentName().toStdString();
 
-        _kernel->changeAgentSetting(curAgentName, new_name.toStdString());
         _kernel->changeAgentSetting(curAgentName, timeout_ms);
 
         // Позже заменить на вычисление типа через получения значения от выпадающего списка
@@ -138,6 +137,10 @@ namespace gui {
 
         const std::vector<core::MetricConfig> vec_metrics(critical_metrics_list.constBegin(), critical_metrics_list.constEnd());
         _kernel->changeAgentSetting(curAgentName, vec_metrics);
+
+        if (new_name != currentAgentName()) {
+            _kernel->changeAgentSetting(curAgentName, new_name.toStdString());
+        }
 
         qDebug() << "[MainWindow] Настройки применены к текущему агенту" << QString::fromStdString(curAgentName);
     }
