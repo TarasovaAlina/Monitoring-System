@@ -21,16 +21,21 @@ namespace core {
                 std::string path_agent = "agents/lib" + config.agentName + ".so";
                 _agents_list[config.agentName] = AgentCore {};
 
-                _agents_list[config.agentName].agent =
-                    std::make_unique<AgentHandler>(path_agent, config.agentType, config.updateInterval.count());
-
-                // Запускаем агент работать в отдельном потоке
-                _agents_list[config.agentName].agent_work_thread = std::thread(
-                    &AgentHandler::work,
-                    _agents_list[config.agentName].agent.get());
-
                 // Передаем критические значения метрик
                 _agents_list[config.agentName].critical_metrics_values = config.metricConfig;
+
+                try {
+                    _agents_list[config.agentName].agent =
+                        std::make_unique<AgentHandler>(path_agent, config.agentType, config.updateInterval.count());
+
+                    // Запускаем агент работать в отдельном потоке
+                    _agents_list[config.agentName].agent_work_thread = std::thread(
+                        &AgentHandler::work,
+                        _agents_list[config.agentName].agent.get());
+                } catch (...) {
+                    // Если произошла ошибка при добавлении агента, то удаляем все его упоминания
+                    _agents_list.erase(config.agentName);
+                }
             }
         }
 
