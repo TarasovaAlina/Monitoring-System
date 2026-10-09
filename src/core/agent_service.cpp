@@ -21,9 +21,6 @@ namespace core {
                 std::string path_agent = "agents/lib" + config.agentName + ".so";
                 _agents_list[config.agentName] = AgentCore {};
 
-                // Передаем критические значения метрик
-                _agents_list[config.agentName].critical_metrics_values = config.metricConfig;
-
                 try {
                     _agents_list[config.agentName].agent =
                         std::make_unique<AgentHandler>(path_agent, config.agentType, config.updateInterval.count());
@@ -32,6 +29,9 @@ namespace core {
                     _agents_list[config.agentName].agent_work_thread = std::thread(
                         &AgentHandler::work,
                         _agents_list[config.agentName].agent.get());
+
+                    // Передаем критические значения метрик
+                    _agents_list[config.agentName].agent->metricsList() = config.metricConfig;
                 } catch (...) {
                     // Если произошла ошибка при добавлении агента, то удаляем все его упоминания
                     _agents_list.erase(config.agentName);
@@ -103,12 +103,5 @@ namespace core {
         // Проверка на то, что элемента с новым ключом не существует, проводится на стороне клиента
         node.key() = new_name;
         _agents_list.insert(std::move(node));
-    }
-
-    std::vector<MetricConfig> &AgentService::criticalMetricValues(const std::string &name) noexcept {
-        // Захватываем мьютекс на запись
-        std::unique_lock<std::shared_mutex> lock(_agents_mutex);
-
-        return _agents_list[name].critical_metrics_values;
     }
 }

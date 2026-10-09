@@ -28,7 +28,7 @@ namespace core {
 
         return AgentInfo {
             agent->type(),
-            _agent_service->criticalMetricValues(name),
+            _agent_service->getAgent(name)->metricsList(),
             agent->timeElapsedSinceStart(),
             agent->timeout(),
             agent->isActive()
@@ -44,17 +44,7 @@ namespace core {
     }
 
     void Kernel::changeAgentSetting(const std::string &name, const std::vector<MetricConfig> &critical_metrics_list) noexcept {
-        _agent_service->criticalMetricValues(name) = critical_metrics_list;
-
-        // Вычисляем, какие метрики необходимо обрабатывать в даный момент
-        std::vector<std::string> metric_names_list;
-        metric_names_list.reserve(critical_metrics_list.size());
-
-        for (auto& config : critical_metrics_list) {
-            metric_names_list.emplace_back(config.target);
-        }
-
-        _agent_service->getAgent(name)->metricNamesList() = metric_names_list;
+        _agent_service->getAgent(name)->metricsList() = critical_metrics_list;
     }
 
     void Kernel::changeAgentSetting(const std::string &name, long new_timeout) noexcept {

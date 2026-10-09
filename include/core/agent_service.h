@@ -9,7 +9,6 @@
  */
 
 #include "config_service.h"
-#include "agent/agent.h"
 #include "agent_handler.h"
 #include <unordered_map>
 #include <thread>
@@ -29,7 +28,6 @@ namespace core {
         struct AgentCore {
             std::unique_ptr<AgentHandler> agent; ///< Управление работой агента
             std::thread agent_work_thread; ///< Поток, в котором происходит считывание метрик
-            std::vector<MetricConfig> critical_metrics_values; ///< Критические значения метрик
         };
 
     public:
@@ -63,11 +61,6 @@ namespace core {
          */
         void changeName(const std::string& name, const std::string& new_name) noexcept;
 
-        /**
-         * @brief Передает информацию о критических значениях метрик, которые собирает агент
-         * @param name Имя агента, у которого берется информация
-         */
-        std::vector<MetricConfig>& criticalMetricValues(const std::string& name) noexcept;
     private:
         std::unordered_map<std::string, AgentCore> _agents_list; ///< Агенты, которые работают в данный момент
         mutable std::shared_mutex _agents_mutex; ///< Мьютекс для потокобезопасной работы с _agents_list

@@ -36,7 +36,14 @@ namespace core {
         while (_running.load()) {
             // Обновление метрик только если агент находится в активном состоянии
             if (!_sleeping.load()) {
-                auto data = _agent->updateMetrics(_metric_names_list);
+                std::vector<std::string> metric_names;
+                metric_names.reserve(_metrics_list.size());
+
+                for (const auto& metric : _metrics_list) {
+                    metric_names.emplace_back(metric.target);
+                }
+
+                auto data = _agent->updateMetrics(metric_names);
                 _logger->log(data);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(_timeout));
@@ -82,8 +89,8 @@ namespace core {
         return std::chrono::duration_cast<std::chrono::milliseconds>(end_time - _start_time).count();
     }
 
-    std::vector<std::string> &AgentHandler::metricNamesList() noexcept {
-        return _metric_names_list;
+    std::vector<MetricConfig> &AgentHandler::metricsList() noexcept {
+        return _metrics_list;
     }
 
     bool AgentHandler::isActive() const noexcept {

@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 
+#include "config_service.h"
 #include "agent/agent.h"
 #include "tools/logger.h"
 
@@ -37,7 +38,7 @@ namespace core {
         agent::AgentType type() const noexcept; ///< Доступ к приватному полю _type
         long& timeout() noexcept; ///< Доступ к приватному полю _timeout
         long timeElapsedSinceStart() const noexcept; ///< Время в мс, прошедшее с создания этого агента
-        std::vector<std::string>& metricNamesList() noexcept; ///< Доступ к списку метрик, значения которых агент должен обновлять
+        std::vector<MetricConfig>& metricsList() noexcept; ///< Доступ к списку метрик, значения которых агент должен обновлять
         bool isActive() const noexcept; ///< Доступ к приватному атомарному флагу _sleeping
 
     private:
@@ -49,7 +50,7 @@ namespace core {
         std::atomic<bool> _running; ///< Атомарны флаг, показывающий, находится ли агент в процессе выполнения
         std::atomic<bool> _sleeping; ///< Атомарный флаг, показывающий, находится ли агент в состоянии сна
 
-        std::vector<std::string> _metric_names_list; ///< Список метрик, которые должен собирать агент
+        std::vector<MetricConfig> _metrics_list; ///< Список метрик, которые должен собирать агент, вместе с критическими значениями
         agent::AgentType _type; ///< Тип агента
         long _timeout; ///< Таймаут обновления
         std::chrono::steady_clock::time_point _start_time; ///< Время создания агента
