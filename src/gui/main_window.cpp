@@ -9,7 +9,8 @@ namespace gui {
     : QMainWindow(parent)
     , _log_reader_thread(new QThread(this))
     , _agent_poller_thread(new QThread(this))
-    , _currentAgentIndex(0) {
+    , _currentAgentIndex(0)
+    , _is_initial_agent_loaded(false) {
         setWindowTitle(QStringLiteral("Системный монитор"));
         resize(900, 520);
 
@@ -57,7 +58,22 @@ namespace gui {
     void MainWindow::reloadAgentList(const QStringList& agents) noexcept {
         std::unique_lock<std::shared_mutex> lock(_agent_names_mutex);
         _agent_names = agents;
+
+        if (_agent_names.isEmpty()) {
+            _agent_names = { QStringLiteral("<Нет доступных агентов>") };
+        }
+
         _ui->setAgentNames(_agent_names);
+
+        if (!_is_initial_agent_loaded && !_agent_names.isEmpty() && _agent_names.first() != QStringLiteral("<Нет доступных агентов>")) {
+            // После этого данный блок никогда не выполнится
+            _is_initial_agent_loaded = true;
+
+            _currentAgentIndex = 0;
+            _ui->setActiveAgentIndex(0);
+
+            pushCurrentAgentToUI();
+        }
 
         qDebug() << "[MainWindow] Обновлен список агентов в UI";
     }
