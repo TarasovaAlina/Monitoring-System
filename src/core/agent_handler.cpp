@@ -94,6 +94,6 @@ namespace core {
     }
 
     bool AgentHandler::isActive() const noexcept {
-        return _sleeping.load();
+        return !_sleeping.load();
     }
 }
