@@ -1,161 +1,156 @@
 #include "core/config_service.h"
 
 namespace core {
+    std::vector<ConfigInfo> ConfigService::load() const {
+        std::ifstream file("config/config.json");
 
-std::vector<ConfigInfo> ConfigService::load() const {
-    std::ifstream file("config/config.json");
-
-    if (!file.is_open()) {
-        throw std::runtime_error("Cannot open config file");
-    }
-
-    json config;
-    file >> config;
-
-    if (!config.contains("agents") || !config["agents"].is_array()) {
-        throw std::runtime_error("Invalid config: agents must be an array");
-    }
-
-    std::vector<ConfigInfo> result;
-
-    for (const auto& agent : config["agents"]) {
-        if (!agent.contains("name") || !agent["name"].is_string()) {
-            throw std::runtime_error("Invalid agent name");
+        if (!file.is_open()) {
+            throw std::runtime_error("Cannot open config file");
         }
 
-        if (!agent.contains("type") || !agent["type"].is_string()) {
-            throw std::runtime_error("Invalid agent type");
+        json config;
+        file >> config;
+
+        if (!config.contains("agents") || !config["agents"].is_array()) {
+            throw std::runtime_error("Invalid config: agents must be an array");
         }
 
-        if (!agent.contains("update_interval") ||
-            !agent["update_interval"].is_number_integer()) {
-            throw std::runtime_error("Invalid update interval");
-        }
+        std::vector<ConfigInfo> result;
 
-        if (!agent.contains("critical_metrics") ||
-            !agent["critical_metrics"].is_array()) {
-            throw std::runtime_error("Invalid critical metrics");
-        }
-
-        ConfigInfo configInfo{
-            agent["name"].get<std::string>(),
-            getAgentType(agent["type"].get<std::string>()),
-            static_cast<std::chrono::milliseconds>(agent["update_interval"].get<int>()),
-            {}
-        };
-
-        for (const auto& metric : agent["critical_metrics"]) {
-            if (!metric.contains("name") || !metric["name"].is_string()) {
-                throw std::runtime_error("Invalid metric name");
+        for (const auto& agent : config["agents"]) {
+            if (!agent.contains("name") || !agent["name"].is_string()) {
+                throw std::runtime_error("Invalid agent name");
             }
 
-            if (!metric.contains("operator") ||
-                !metric["operator"].is_string()) {
-                throw std::runtime_error("Invalid metric operator");
+            if (!agent.contains("type") || !agent["type"].is_string()) {
+                throw std::runtime_error("Invalid agent type");
             }
 
-            if (!metric.contains("value") ||
-                !metric["value"].is_number()) {
-                throw std::runtime_error("Invalid metric value");
+            if (!agent.contains("update_interval") ||
+                !agent["update_interval"].is_number_integer()) {
+                throw std::runtime_error("Invalid update interval");
             }
 
-            const std::string target = metric["name"].get<std::string>();
-            const std::string operation = metric["operator"].get<std::string>();
-            const double value = metric["value"].get<double>();
-
-            if (operation != "<" &&
-                operation != "<=" &&
-                operation != "==" &&
-                operation != ">=" &&
-                operation != ">") {
-                throw std::runtime_error("Invalid metric operator");
+            if (!agent.contains("critical_metrics") ||
+                !agent["critical_metrics"].is_array()) {
+                throw std::runtime_error("Invalid critical metrics");
             }
 
-            configInfo.metricConfig.push_back(
-                { target, Threshold(operation, value) }
-            );
+            ConfigInfo configInfo{
+                agent["name"].get<std::string>(),
+                _getAgentType(agent["type"].get<std::string>()),
+                static_cast<std::chrono::milliseconds>(agent["update_interval"].get<int>()),
+                {}
+            };
+
+            for (const auto& metric : agent["critical_metrics"]) {
+                if (!metric.contains("name") || !metric["name"].is_string()) {
+                    throw std::runtime_error("Invalid metric name");
+                }
+
+                if (!metric.contains("operator") ||
+                    !metric["operator"].is_string()) {
+                    throw std::runtime_error("Invalid metric operator");
+                }
+
+                if (!metric.contains("value") ||
+                    !metric["value"].is_number()) {
+                    throw std::runtime_error("Invalid metric value");
+                }
+
+                const std::string target = metric["name"].get<std::string>();
+                const std::string operation = metric["operator"].get<std::string>();
+                const double value = metric["value"].get<double>();
+
+                if (operation != "<" &&
+                    operation != "<=" &&
+                    operation != "==" &&
+                    operation != ">=" &&
+                    operation != ">") {
+                    throw std::runtime_error("Invalid metric operator");
+                }
+
+                configInfo.metricConfig.push_back(
+                    { target, Threshold(operation, value) }
+                );
+            }
+
+            result.push_back(std::move(configInfo));
         }
 
-        result.push_back(std::move(configInfo));
+        return result;
     }
 
-    return result;
-}
+    bool ConfigService::updateMetric(const std::string& agent_name, const MetricConfig& metric_config) const {
+        std::ifstream inputFile("config/config.json");
 
-bool ConfigService::updateMetric(
-    const std::string& agentName,
-    const MetricConfig& metricConfig) const {
-
-    std::ifstream inputFile("config/config.json");
-
-    if (!inputFile.is_open()) {
-        throw std::runtime_error("Cannot open config file");
-    }
-
-    json config;
-    inputFile >> config;
-
-    if (!config.contains("agents") || !config["agents"].is_array()) {
-        throw std::runtime_error("Invalid config: agents must be an array");
-    }
-
-    for (auto& agent : config["agents"]) {
-
-        if (!agent.contains("name") || !agent["name"].is_string()) {
-            throw std::runtime_error("Invalid agent name");
+        if (!inputFile.is_open()) {
+            throw std::runtime_error("Cannot open config file");
         }
 
-        if (agent["name"].get<std::string>() != agentName) {
-            continue;
+        json config;
+        inputFile >> config;
+
+        if (!config.contains("agents") || !config["agents"].is_array()) {
+            throw std::runtime_error("Invalid config: agents must be an array");
         }
 
-        if (!agent.contains("critical_metrics") ||
-            !agent["critical_metrics"].is_array()) {
-            throw std::runtime_error("Invalid critical metrics");
-        }
+        for (auto& agent : config["agents"]) {
 
-        for (auto& metric : agent["critical_metrics"]) {
-
-            if (!metric.contains("name") || !metric["name"].is_string()) {
-                throw std::runtime_error("Invalid metric name");
+            if (!agent.contains("name") || !agent["name"].is_string()) {
+                throw std::runtime_error("Invalid agent name");
             }
 
-            if (metric["name"].get<std::string>() != metricConfig.target) {
+            if (agent["name"].get<std::string>() != agent_name) {
                 continue;
             }
 
-            metric["operator"] = metricConfig.threshold.operation;
-            metric["value"] = metricConfig.threshold.value;
-
-            std::ofstream outputFile("config/config.json");
-
-            if (!outputFile.is_open()) {
-                throw std::runtime_error(
-                    "Cannot open config file for writing");
+            if (!agent.contains("critical_metrics") || !agent["critical_metrics"].is_array()) {
+                throw std::runtime_error("Invalid critical metrics");
             }
 
-            outputFile << config.dump(4);
+            for (auto& metric : agent["critical_metrics"]) {
 
-            return true;
+                if (!metric.contains("name") || !metric["name"].is_string()) {
+                    throw std::runtime_error("Invalid metric name");
+                }
+
+                if (metric["name"].get<std::string>() != metric_config.target) {
+                    continue;
+                }
+
+                metric["operator"] = metric_config.threshold.operation;
+                metric["value"] = metric_config.threshold.value;
+
+                std::ofstream outputFile("config/config.json");
+
+                if (!outputFile.is_open()) {
+                    throw std::runtime_error(
+                        "Cannot open config file for writing");
+                }
+
+                outputFile << config.dump(4);
+
+                return true;
+            }
+
+            return false;
         }
 
         return false;
     }
 
-    return false;
-}
+    const AgentType ConfigService::_getAgentType(const std::string& agentType) const noexcept {
+        AgentType agentTypeRes{};
 
-const AgentType ConfigService::getAgentType(const std::string& agentType) const noexcept {
-    AgentType agentTypeRes{};
+        if (agentType == "CPU_AGENT")
+            agentTypeRes = agent::CPU_AGENT;
+        else if (agentType == "MEMORY_AGENT")
+            agentTypeRes = agent::MEMORY_AGENT;
+        else if (agentType == "NETWORK_AGENT")
+            agentTypeRes = agent::NETWORK_AGENT;
 
-    if (agentType == "CPU_AGENT")
-        agentTypeRes = agent::CPU_AGENT;
-    else if (agentType == "MEMORY_AGENT")
-        agentTypeRes = agent::MEMORY_AGENT;
-    else if (agentType == "NETWORK_AGENT")
-        agentTypeRes = agent::NETWORK_AGENT;
-    
-    return agentTypeRes;
-}
+        return agentTypeRes;
+    }
 
 }
