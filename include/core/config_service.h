@@ -62,27 +62,24 @@ namespace core {
         /**
          * @brief Изменяет настройки конкретной метрики конкретного агента в config-файле
          * @param agent_name Имя агента, настройки метрики которого необходимо изменить
-         * @param metric_config Новые настройки метрики: имя, оператор сравнения и значение
-         * @return true, если метрика успешно изменена, иначе false
-         *
-         * Использование:
-         * @code
-         * MetricConfig metric {
-         *     "ram",
-         *     {">=", 95}
-         * };
-         *
-         * configService.updateMetric("memory", metric); @endcode
+         * @param settings Новые настройки агента, включая новое имя
          */
-        bool updateMetric(const std::string& agent_name, const ConfigInfo& settings) const;
+        void update(const std::string& agent_name, const ConfigInfo& settings) const;
 
     private:
         /**
          * @brief Вычисляет тип агента по записи в JSON файле
          * @param str_type Строчное написание типа
-         * @return Тип агента в виде перечисления AgentType
+         * @return Тип агента в виде перечисления agent::AgentType
          */
-        const AgentType _getAgentType(const std::string& str_type) const noexcept;
+        const AgentType _getAgentTypeFromStr(const std::string& str_type) const noexcept;
+
+        /**
+         * @brief Определяет запись типа агента в JSON файле
+         * @param type Тип агента в виде перечисления agent::AgentType
+         * @return Строчное написание, пригодное для записи в файл
+         */
+        const std::string _setAgentTypeToStr(const AgentType& type) const noexcept;
     };
 
 }
