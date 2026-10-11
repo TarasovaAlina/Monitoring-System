@@ -37,18 +37,22 @@ namespace core {
 
     void Kernel::changeAgentSetting(const std::string &old_name, const std::string &new_name) noexcept {
         _agent_service->changeName(old_name, new_name);
+        _config_service->overwriteAgentName(old_name, new_name);
     }
 
     void Kernel::changeAgentSetting(const std::string &name, agent::AgentType new_type) noexcept {
         _agent_service->getAgent(name)->switchType(new_type);
+        _config_service->overwriteAgentType(name, new_type);
     }
 
     void Kernel::changeAgentSetting(const std::string &name, const std::vector<MetricConfig> &critical_metrics_list) noexcept {
         _agent_service->getAgent(name)->metricsList() = critical_metrics_list;
+        _config_service->overwriteAgentMetricsList(name, critical_metrics_list);
     }
 
     void Kernel::changeAgentSetting(const std::string &name, long new_timeout) noexcept {
         _agent_service->getAgent(name)->timeout() = new_timeout;
+        _config_service->overwriteAgentTimeout(name, new_timeout);
     }
 
     void Kernel::disconnectionAgent(const std::string &name) noexcept {
