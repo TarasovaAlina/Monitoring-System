@@ -49,22 +49,30 @@ namespace core {
 
     /**
      * @class ConfigService
-     * @brief Класс по работе с config файлом
+     * @brief Класс по работе с JSON конфигурации агентов
      */
     class ConfigService {
     public:
         /**
-         * @brief Обработка config файла для последующей загрузки в агентов
-         * @return вектор с информацией для каждого агента с соответствующими параметрами
+         * @brief Обработка JSON файла для последующего создания агентов со считанными настройками.
+         *
+         * Шаблон файла конфигурации:
+         * - 1-й уровень: имя агента. Будет загружена динамическая библиотека @code./agents/lib{имя_агента}.so@endcode
+         * - 2-й уровень: настройки агента. Здесь считаются поля type, update_interval, critical_metrics
+         * (если какого-то поля не будет, то установится значение по умолчанию)
+         * - 3-й уровень: имя метрики. Считывается и записывается в общий список метрик critical_metrics
+         * - 4-й уровень: настройка метрики. Здесь считываются поля operator и value из структуры Threshold
+         * @return Вектор с информацией для каждого агента с соответствующими параметрами
+         * @note Файл для считывания - @code./config/config.json@endcode
          */
-        std::vector<ConfigInfo> load() const;
+        std::vector<ConfigInfo> load() const noexcept;
 
         /**
          * @brief Изменяет настройки конкретной метрики конкретного агента в config-файле
          * @param agent_name Имя агента, настройки метрики которого необходимо изменить
          * @param settings Новые настройки агента, включая новое имя
          */
-        void update(const std::string& agent_name, const ConfigInfo& settings) const;
+        void update(const std::string& agent_name, const ConfigInfo& settings) const noexcept;
 
     private:
         /**
