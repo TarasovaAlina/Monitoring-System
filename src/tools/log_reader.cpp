@@ -63,8 +63,6 @@ namespace tools {
 
                 // Загружаем в общий список
                 result.second.push_back(metric);
-
-                ss >> temp;
             }
         }
 
