@@ -68,11 +68,32 @@ namespace core {
         std::vector<ConfigInfo> load() const noexcept;
 
         /**
-         * @brief Изменяет настройки конкретной метрики конкретного агента в config-файле
-         * @param agent_name Имя агента, настройки метрики которого необходимо изменить
-         * @param settings Новые настройки агента, включая новое имя
+         * @brief Изменяет в JSON файле имя агента, под которым сохранены настройки текущего агента
+         * @param agent_name Текущее имя агента
+         * @param new_name Новое имя агента
          */
-        void update(const std::string& agent_name, const ConfigInfo& settings) const noexcept;
+        void overwriteAgentName(const std::string& agent_name, const std::string& new_name) noexcept;
+
+        /**
+         * @brief Изменяет в JSON файле запись о типе агента
+         * @param agent_name Имя конкретного агена
+         * @param new_type Новый тип этого агента
+         */
+        void overwriteAgentType(const std::string& agent_name, const AgentType& new_type) noexcept;
+
+        /**
+         * @brief Изменяет в JSON файле записи о критических значениях собираемых метрик
+         * @param agent_name Имя конкретного агента
+         * @param critical_metrics_list Список критических значений метрик
+         */
+        void overwriteAgentMetricsList(const std::string& agent_name, const std::vector<MetricConfig>& critical_metrics_list) noexcept;
+
+        /**
+         * @brief Изменяет в JSON файле запись о времени обновления метрик агента
+         * @param agent_name Имя конкретного агента
+         * @param timeout Новое время
+         */
+        void overwriteAgentTimeout(const std::string& agent_name, long timeout) noexcept;
 
     private:
         /**

@@ -57,66 +57,84 @@ namespace core {
         return result;
     }
 
-    void ConfigService::update(const std::string& agent_name, const ConfigInfo& settings) const noexcept {
+    void ConfigService::overwriteAgentName(const std::string &agent_name, const std::string &new_name) noexcept {
         std::ifstream inputFile("config/config.json");
         json config = json::parse(inputFile);
 
-        // Находим в записях JSON файла необходимый агент
+        // Проверяем, чтобы была соответствующая запись в JSON файле
         if (!config.contains(agent_name)) {
             return;
         }
 
-        auto agent_setting = config[agent_name];
-
-        agent_setting["type"] = _setAgentTypeToStr(settings.agentType);
-        agent_setting["update_interval"] = settings.updateInterval.count();
-
-        auto metric_setting = agent_setting["critical_metrics"];
-
-        // Находим лишние записи в JSON
-        for (auto metric_it = metric_setting.begin(); metric_it != metric_setting.end(); ++metric_it) {
-            auto metric_name = metric_it.key();
-            auto crit_value_it =
-                std::find_if(settings.metricConfig.begin(), settings.metricConfig.end(),
-                [metric_name](const MetricConfig& crit_value) {
-                return crit_value.target == metric_name;
-            });
-
-            // Удаляем элемент, если его нет в списке
-            if (crit_value_it == settings.metricConfig.end()) {
-                metric_setting.erase(metric_it);
-            }
-        }
-
-        // Проходимся по активным метрикам
-        for (auto& crit_value : settings.metricConfig) {
-            // Обновляем запись, если такая уже есть
-            if (metric_setting.contains(crit_value.target)) {
-                metric_setting[crit_value.target]["operator"] = crit_value.threshold.operation;
-                metric_setting[crit_value.target]["value"] = crit_value.threshold.value;
-            }
-
-            // Если запись не найдена, добавляем
-            else {
-                json metric;
-
-                metric["name"] = crit_value.target;
-                metric["operator"] = crit_value.threshold.operation;
-                metric["value"] = crit_value.threshold.value;
-
-                metric_setting.push_back(metric);
-            }
-        }
-
         // Обновляем имя агента в самом конце
-        if (agent_name != settings.agentName && !config.contains(settings.agentName)) {
-            config[settings.agentName] = std::move(config[agent_name]);
+        if (agent_name != new_name && !config.contains(new_name)) {
+            config[new_name] = std::move(config[agent_name]);
             config.erase(agent_name);
-        }
 
-        // Записываем новые данные в тот же файл
-        std::ofstream outputFile("config/config.json");
-        outputFile << config.dump(4);
+            // Записываем в тот же файл
+            std::ofstream outputFile("config/config.json");
+            outputFile << config.dump(4);
+            outputFile.close();
+        }
+    }
+
+    void ConfigService::overwriteAgentType(const std::string &agent_name, const AgentType &new_type) noexcept {
+        std::ifstream inputFile("config/config.json");
+        json config = json::parse(inputFile);
+
+        // Проверяем, чтобы была соответствующая запись в JSON файле
+        if (config.contains(agent_name)) {
+            config[agent_name]["type"] = _setAgentTypeToStr(new_type);
+
+            // Записываем в тот же файл
+            std::ofstream outputFile("config/config.json");
+            outputFile << config.dump(4);
+            outputFile.close();
+        }
+    }
+
+    void ConfigService::overwriteAgentMetricsList(const std::string &agent_name, const std::vector<MetricConfig> &critical_metrics_list) noexcept {
+        std::ifstream inputFile("config/config.json");
+        json config = json::parse(inputFile);
+
+        // Проверяем, чтобы была соответствующая запись в JSON файле
+        if (config.contains(agent_name)) {
+            auto& agent_settings = config[agent_name];
+            json settings;
+
+            // Формируем новый список critical_metrics
+            for (auto& metric : critical_metrics_list) {
+                json metric_setting;
+
+                metric_setting["operator"] = metric.threshold.operation;
+                metric_setting["value"] = metric.threshold.value;
+
+                settings[metric.target] = metric_setting;
+            }
+
+            agent_settings["critical_metrics"] = std::move(settings);
+
+            // Записываем в тот же файл
+            std::ofstream outputFile("config/config.json");
+            outputFile << config.dump(4);
+            outputFile.close();
+        }
+    }
+
+    void ConfigService::overwriteAgentTimeout(const std::string &agent_name, long timeout) noexcept {
+        std::ifstream inputFile("config/config.json");
+        json config = json::parse(inputFile);
+
+        // Проверяем, чтобы была соответствующая запись в JSON файле
+        if (config.contains(agent_name)) {
+            config[agent_name]["update_interval"] = timeout;
+
+            // Записываем в тот же файл
+            inputFile.close();
+            std::ofstream outputFile("config/config.json");
+            outputFile << config.dump(4);
+            outputFile.close();
+        }
     }
 
     const AgentType ConfigService::_getAgentTypeFromStr(const std::string& agentType) const noexcept {
