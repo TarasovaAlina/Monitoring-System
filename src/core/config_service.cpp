@@ -1,140 +1,99 @@
 #include "core/config_service.h"
 
 namespace core {
-    std::vector<ConfigInfo> ConfigService::load() const {
+    std::vector<ConfigInfo> ConfigService::load() const noexcept {
+        std::vector<ConfigInfo> result;
         std::ifstream file("config/config.json");
 
-        if (!file.is_open()) {
-            throw std::runtime_error("Cannot open config file");
-        }
+        json agents = json::parse(file);
 
-        json config;
-        file >> config;
+        for (auto it = agents.begin(); it != agents.end(); ++it) {
+            ConfigInfo agent_config;
+            auto& agent_settings = it.value();
 
-        if (!config.contains("agents") || !config["agents"].is_array()) {
-            throw std::runtime_error("Invalid config: agents must be an array");
-        }
+            agent_config.agentName = it.key();
 
-        std::vector<ConfigInfo> result;
+            agent_config.agentType =
+                (agent_settings.contains("type") && agent_settings["type"].is_string())
+                ? _getAgentTypeFromStr(agent_settings["type"].get<std::string>())
+                : agent::CPU_AGENT;
 
-        for (const auto& agent : config["agents"]) {
-            if (!agent.contains("name") || !agent["name"].is_string()) {
-                throw std::runtime_error("Invalid agent name");
-            }
+            agent_config.updateInterval =
+                (agent_settings.contains("update_interval") && agent_settings["update_interval"].is_number())
+                ? std::chrono::milliseconds(agent_settings["update_interval"].get<int>())
+                : std::chrono::milliseconds(100);
 
-            if (!agent.contains("type") || !agent["type"].is_string()) {
-                throw std::runtime_error("Invalid agent type");
-            }
+            if (agent_settings.contains("critical_metrics")) {
+                std::vector<MetricConfig> metric_configs;
 
-            if (!agent.contains("update_interval") ||
-                !agent["update_interval"].is_number_integer()) {
-                throw std::runtime_error("Invalid update interval");
-            }
+                // Считываем все метрики и их критические значения для этого агента
+                for (auto metric_it = agent_settings["critical_metrics"].begin();
+                    metric_it != agent_settings["critical_metrics"].end();
+                    ++metric_it) {
 
-            if (!agent.contains("critical_metrics") ||
-                !agent["critical_metrics"].is_array()) {
-                throw std::runtime_error("Invalid critical metrics");
-            }
+                    MetricConfig config;
+                    config.target = metric_it.key();
 
-            ConfigInfo configInfo{
-                agent["name"].get<std::string>(),
-                _getAgentTypeFromStr(agent["type"].get<std::string>()),
-                static_cast<std::chrono::milliseconds>(agent["update_interval"].get<int>()),
-                {}
-            };
+                    auto config_settings = metric_it.value();
+                    config.threshold.operation =
+                        (config_settings.contains("operator") && config_settings["operator"].is_string())
+                        ? config_settings["operator"].get<std::string>()
+                        : "==";
 
-            for (const auto& metric : agent["critical_metrics"]) {
-                if (!metric.contains("name") || !metric["name"].is_string()) {
-                    throw std::runtime_error("Invalid metric name");
+                    config.threshold.value =
+                        (config_settings.contains("value") && config_settings["value"].is_number())
+                        ? config_settings["value"].get<double>()
+                        : 0.0;
+
+                    metric_configs.push_back(config);
                 }
 
-                if (!metric.contains("operator") ||
-                    !metric["operator"].is_string()) {
-                    throw std::runtime_error("Invalid metric operator");
-                }
-
-                if (!metric.contains("value") ||
-                    !metric["value"].is_number()) {
-                    throw std::runtime_error("Invalid metric value");
-                }
-
-                const std::string target = metric["name"].get<std::string>();
-                const std::string operation = metric["operator"].get<std::string>();
-                const double value = metric["value"].get<double>();
-
-                if (operation != "<" &&
-                    operation != "<=" &&
-                    operation != "==" &&
-                    operation != ">=" &&
-                    operation != ">") {
-                    throw std::runtime_error("Invalid metric operator");
-                }
-
-                configInfo.metricConfig.push_back(
-                    { target, Threshold(operation, value) }
-                );
+                agent_config.metricConfig = std::move(metric_configs);
             }
 
-            result.push_back(std::move(configInfo));
+            result.push_back(std::move(agent_config));
         }
 
         return result;
     }
 
-    void ConfigService::update(const std::string& agent_name, const ConfigInfo& settings) const {
+    void ConfigService::update(const std::string& agent_name, const ConfigInfo& settings) const noexcept {
         std::ifstream inputFile("config/config.json");
+        json config = json::parse(inputFile);
 
-        if (!inputFile.is_open()) {
-            throw std::runtime_error("Cannot open config file");
-        }
-
-        json config;
-        inputFile >> config;
-
-        if (!config.contains("agents") || !config["agents"].is_array()) {
-            throw std::runtime_error("Invalid config: agents must be an array");
-        }
-
-        auto agent_iter = std::find_if(config["agents"].begin(), config["agents"].end(), [agent_name](const json& agent) {
-            return agent.contains("name") && agent["name"].is_string() && agent["name"].get<std::string> == agent_name;
-        });
-
-        if (agent_iter == config["agents"].end()) {
+        // Находим в записях JSON файла необходимый агент
+        if (!config.contains(agent_name)) {
             return;
         }
 
-        auto agent = *agent_iter;
+        auto agent_setting = config[agent_name];
 
-        agent["type"] = _setAgentTypeToStr(settings.agentType);
-        agent["update_interval"] = settings.updateInterval.count();
+        agent_setting["type"] = _setAgentTypeToStr(settings.agentType);
+        agent_setting["update_interval"] = settings.updateInterval.count();
+
+        auto metric_setting = agent_setting["critical_metrics"];
 
         // Находим лишние записи в JSON
-        for (auto& metric : agent["critical_metrics"]) {
-            auto crit_value_it = std::find_if(settings.metricConfig.begin(), settings.metricConfig.end(),
-                [metric](const MetricConfig& crit_value) {
-                return crit_value.target == metric["name"].get<std::string>();
+        for (auto metric_it = metric_setting.begin(); metric_it != metric_setting.end(); ++metric_it) {
+            auto metric_name = metric_it.key();
+            auto crit_value_it =
+                std::find_if(settings.metricConfig.begin(), settings.metricConfig.end(),
+                [metric_name](const MetricConfig& crit_value) {
+                return crit_value.target == metric_name;
             });
 
-            // Удаляем элемент с неправильным форматом или если его нет в списке
-            if (!metric.contains("name") || !metric["name"].is_string() ||
-                crit_value_it == settings.metricConfig.end()) {
-                agent["critical_metrics"].erase(metric);
+            // Удаляем элемент, если его нет в списке
+            if (crit_value_it == settings.metricConfig.end()) {
+                metric_setting.erase(metric_it);
             }
         }
 
-        // Обновляем значения активных метрик
+        // Проходимся по активным метрикам
         for (auto& crit_value : settings.metricConfig) {
-            auto metric_it = std::find_if(agent["critical_metrics"].begin(), agent["critical_metrics"].end(),
-                [crit_value](const json& metric) {
-                    return crit_value.target == metric["name"].get<std::string>();
-                });
-
             // Обновляем запись, если такая уже есть
-            if (metric_it != agent["critical_metrics"].end()) {
-                auto metric = *metric_it;
-
-                metric["operator"] = crit_value.threshold.operation;
-                metric["value"] = crit_value.threshold.value;
+            if (metric_setting.contains(crit_value.target)) {
+                metric_setting[crit_value.target]["operator"] = crit_value.threshold.operation;
+                metric_setting[crit_value.target]["value"] = crit_value.threshold.value;
             }
 
             // Если запись не найдена, добавляем
@@ -145,21 +104,18 @@ namespace core {
                 metric["operator"] = crit_value.threshold.operation;
                 metric["value"] = crit_value.threshold.value;
 
-                agent["critical_metrics"].push_back(metric);
+                metric_setting.push_back(metric);
             }
         }
 
         // Обновляем имя агента в самом конце
-        agent["name"] = settings.agentName;
+        if (agent_name != settings.agentName && !config.contains(settings.agentName)) {
+            config[settings.agentName] = std::move(config[agent_name]);
+            config.erase(agent_name);
+        }
 
         // Записываем новые данные в тот же файл
         std::ofstream outputFile("config/config.json");
-
-        if (!outputFile.is_open()) {
-            throw std::runtime_error(
-                "Cannot open config file for writing");
-        }
-
         outputFile << config.dump(4);
     }
 
