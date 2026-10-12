@@ -50,7 +50,7 @@ namespace tools {
             }
 
             if (email_config.contains("recipient") && email_config["recipient"].is_string()) {
-                _recipient = config["recipient"].get<std::string>();
+                _recipient = email_config["recipient"].get<std::string>();
             }
 
             if (email_config.contains("password") && email_config["password"].is_string()) {

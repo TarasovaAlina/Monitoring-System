@@ -50,8 +50,8 @@ namespace core {
                 // Сравниваем полученные данные с критическими значениями
                 for (auto metric_res : data) {
                     // Находим запись об этой метрике
-                    auto metric_it = std::ranges::find_if(_metrics_list.begin(), _metrics_list.end(), [&metric_res](const auto& iter) {
-                        return metric_res.name == iter->target;
+                    auto metric_it = std::ranges::find_if(_metrics_list.begin(), _metrics_list.end(), [&metric_res](const auto& metric_ref) {
+                        return metric_res.name == metric_ref.target;
                     });
 
                     auto operation = metric_it->threshold.operation;
