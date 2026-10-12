@@ -17,6 +17,10 @@ namespace core {
 
     Kernel::~Kernel() noexcept {
         _work_flag.store(false);
+
+        if (_search_agents_thread.joinable()) {
+            _search_agents_thread.join();
+        }
     }
 
     std::vector<std::string> Kernel::agentsList() const noexcept {
