@@ -2,10 +2,9 @@
 #include <fstream>
 
 namespace tools {
-    NotificationService::NotificationService() noexcept
-    : _telegram_channel(std::make_unique<TelegramChannel>())
-    , _email_channel(std::make_unique<EmailChannel>())
-    , _is_enable_duplication(false) {}
+    TelegramChannel NotificationService::_telegram_channel;
+    EmailChannel NotificationService::_email_channel;
+    bool NotificationService::_is_enable_duplication = false;
 
     bool &NotificationService::emailDuplication() noexcept {
         return _is_enable_duplication;
@@ -23,12 +22,12 @@ namespace tools {
         std::string message =
             "⚠️ Alert from Host: " + host_name + "\n" +
             "📊 Metric: " + metric_name + "\n" +
-            "📈 Value: " + value;
+            "📈 Value: " + std::to_string(value);
 
         // Отправляем сообщение для последующей передачи
-        _telegram_channel->send(message);
+        _telegram_channel.send(message);
         if (_is_enable_duplication) {
-            _email_channel->send(metric_name);
+            _email_channel.send(metric_name);
         }
     }
 }

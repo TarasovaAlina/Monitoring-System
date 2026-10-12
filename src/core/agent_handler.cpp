@@ -1,4 +1,5 @@
 #include "core/agent_handler.h"
+#include "tools/notification_service.h"
 #include <dlfcn.h>
 #include <thread>
 
@@ -9,8 +10,7 @@ namespace core {
     , _type(type)
     , _timeout(milliseconds)
     , _agent(nullptr, nullptr)
-    , _logger(std::make_unique<tools::Logger>())
-    , _notification_service(std::make_unique<tools::NotificationService>()) {
+    , _logger(std::make_unique<tools::Logger>()) {
         _shared_lib = dlopen(path.c_str(), RTLD_LAZY);
 
         if (_shared_lib == nullptr) {
@@ -62,7 +62,7 @@ namespace core {
                         operation == "<=" && metric_res.value >= crit_value ||
                         operation == ">=" && metric_res.value <= crit_value ||
                         operation == "==" && metric_res.value >= crit_value) {
-                        _notification_service->notify(metric_res.name, metric_res.value);
+                        tools::NotificationService::notify(metric_res.name, metric_res.value);
                     }
                 }
 
