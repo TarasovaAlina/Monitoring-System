@@ -29,7 +29,8 @@ namespace tools {
         // Выполняем POST-запрос к Telegram Bot API
         cpr::Response r = cpr::Post(
             cpr::Url{url},
-            cpr::Payload{{"chat_id", _chat_id}, {"text", message}}
+            cpr::Payload{{"chat_id", _chat_id}, {"text", message}},
+            cpr::Timeout{500}
         );
     }
 
@@ -87,6 +88,7 @@ namespace tools {
         curl_easy_setopt(curl, CURLOPT_READFUNCTION, _PayloadSource);
         curl_easy_setopt(curl, CURLOPT_READDATA, &payload);
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 1L);
 
         CURLcode res = curl_easy_perform(curl);
 
