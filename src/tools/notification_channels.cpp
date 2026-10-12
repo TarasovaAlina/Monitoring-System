@@ -74,7 +74,7 @@ namespace tools {
 
         struct EmailPayload payload = { emailBody.c_str(), emailBody.size() };
 
-        curl_easy_setopt(curl, CURLOPT_URL, _smtp_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, ("smtps://smtp." + _smtp_url + ":465").c_str());
         curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_USERNAME, _sender.c_str());
         curl_easy_setopt(curl, CURLOPT_PASSWORD, _password.c_str());
