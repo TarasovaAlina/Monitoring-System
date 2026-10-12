@@ -7,15 +7,19 @@ using nlohmann::json;
 
 namespace tools {
     TelegramChannel::TelegramChannel() noexcept {
-        std::ifstream file(TELEGRAM_CONF);
+        std::ifstream file(NOTIFICATION_CHANNELS_CONFIGURATION);
         json config = json::parse(file);
 
-        if (config.contains("token") && config["token"].is_string()) {
-            _bot_token = config["token"].get<std::string>();
-        }
+        if (config.contains("telegram")) {
+            auto& telegram_config = config["telegram"];
 
-        if (config.contains("id") && config["id"].is_string()) {
-            _chat_id = config["id"].get<std::string>();
+            if (telegram_config.contains("token") && telegram_config["token"].is_string()) {
+                _bot_token = telegram_config["token"].get<std::string>();
+            }
+
+            if (telegram_config.contains("id") && telegram_config["id"].is_string()) {
+                _chat_id = telegram_config["id"].get<std::string>();
+            }
         }
     }
 
@@ -31,23 +35,27 @@ namespace tools {
 
     EmailChannel::EmailChannel() noexcept {
         // Считываем данные конфигурации
-        std::ifstream file(EMAIL_CONF);
+        std::ifstream file(NOTIFICATION_CHANNELS_CONFIGURATION);
         json config = json::parse(file);
 
-        if (config.contains("url") && config["url"].is_string()) {
-            _smtp_url = config["url"].get<std::string>();
-        }
+        if (config.contains("email")) {
+            auto& email_config = config["email"];
 
-        if (config.contains("sender") && config["sender"].is_string()) {
-            _sender = config["sender"].get<std::string>();
-        }
+            if (email_config.contains("url") && email_config["url"].is_string()) {
+                _smtp_url = email_config["url"].get<std::string>();
+            }
 
-        if (config.contains("recipient") && config["recipient"].is_string()) {
-            _recipient = config["recipient"].get<std::string>();
-        }
+            if (email_config.contains("sender") && email_config["sender"].is_string()) {
+                _sender = email_config["sender"].get<std::string>();
+            }
 
-        if (config.contains("password") && config["password"].is_string()) {
-            _password = config["password"].get<std::string>();
+            if (email_config.contains("recipient") && email_config["recipient"].is_string()) {
+                _recipient = config["recipient"].get<std::string>();
+            }
+
+            if (email_config.contains("password") && email_config["password"].is_string()) {
+                _password = email_config["password"].get<std::string>();
+            }
         }
     }
 

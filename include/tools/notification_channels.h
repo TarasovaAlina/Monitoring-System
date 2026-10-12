@@ -10,8 +10,7 @@
  * @date 12.10.2026
  */
 
-#define TELEGRAM_CONF "config/telegram.json"
-#define EMAIL_CONF "config/email.json"
+#define NOTIFICATION_CHANNELS_CONFIGURATION "config/notification.json"
 
 namespace tools {
     /**
@@ -32,8 +31,8 @@ namespace tools {
     public:
         /**
          * @brief Инициализация канала связи.
-         * Считывает настройки из файла config/telegram.json.
-         * Данные хранятся в следующем формате:
+         * Считывает настройки из файла NOTIFICATION_CHANNELS_CONFIGURATION.
+         * Данные хранятся в секции "telegram" в следующем формате:
          * - token: токен бота
          * - id: ID чата или канала
          */
@@ -58,8 +57,8 @@ namespace tools {
     public:
         /**
          * @brief Инициализация канала связи.
-         * Считывает настройки из файла config/email.json.
-         * Данные хранятся в следующем формате:
+         * Считывает настройки из файла NOTIFICATION_CHANNELS_CONFIGURATION.
+         * Данные хранятся в секции "email" в следующем формате:
          * - url: адрес SMTP-сервера
          * - sender: email-адрес отправителя
          * - recipient: email-адрес получателя
