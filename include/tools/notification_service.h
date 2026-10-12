@@ -24,11 +24,9 @@ namespace tools {
         NotificationService() noexcept;
 
         /**
-         * @brief Устанавливает возможность дублирования сообщения
-         * на указанный email-адрес
-         * @param enable Будет ли включена/выключена эта функция
+         * @brief Доступ к приватному полю _is_enable_duplication
          */
-        void enableEmailDuplication(bool enable) noexcept;
+        bool& emailDuplication() noexcept;
 
         /**
          * @brief Формирует сообщение и передает его _telegram_channel и _email_channel
