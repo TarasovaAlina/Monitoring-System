@@ -9,7 +9,8 @@ namespace core {
     , _type(type)
     , _timeout(milliseconds)
     , _agent(nullptr, nullptr)
-    , _logger(std::make_unique<tools::Logger>()) {
+    , _logger(std::make_unique<tools::Logger>())
+    , _notification_service(std::make_unique<tools::NotificationService>()) {
         _shared_lib = dlopen(path.c_str(), RTLD_LAZY);
 
         if (_shared_lib == nullptr) {
@@ -45,6 +46,25 @@ namespace core {
 
                 auto data = _agent->updateMetrics(metric_names);
                 _logger->log(data);
+
+                // Сравниваем полученные данные с критическими значениями
+                for (auto metric_res : data) {
+                    // Находим запись об этой метрике
+                    auto metric_it = std::ranges::find_if(_metrics_list.begin(), _metrics_list.end(), [&metric_res](const auto& iter) {
+                        return metric_res.name == iter->target;
+                    });
+
+                    auto operation = metric_it->threshold.operation;
+                    auto crit_value = metric_it->threshold.value;
+
+                    if (operation == "<" && metric_res.value < crit_value ||
+                        operation == ">" && metric_res.value > crit_value ||
+                        operation == "<=" && metric_res.value >= crit_value ||
+                        operation == ">=" && metric_res.value <= crit_value ||
+                        operation == "==" && metric_res.value >= crit_value) {
+                        _notification_service->notify(metric_res.name, metric_res.value);
+                    }
+                }
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(_timeout));
             }
