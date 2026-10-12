@@ -75,6 +75,25 @@ namespace tools {
 
     private:
         /**
+         * @brief Вспомогательная структура,
+         * хранящая текущее состояние отправки
+         */
+        struct EmailPayload {
+            const char* data; ///< Указатель на оставшуюся часть текста
+            size_t size; ///< Количество оставшихся для отправки байт
+        };
+
+        /**
+         * @brief Функция-посредник, которая вызывает libcurl.
+         * Она берет данные из структуры EmailPayload и перекладывает их в буфер libcurl
+         * @param ptr Буфер назначения
+         * @param size Размер одного элемента
+         * @param nmemb Количество элементов
+         * @param userp Пользовательский контекст (будет приведено к структуре EmailPayload)
+         */
+        static size_t _PayloadSource(void* ptr, size_t size, size_t nmemb, void* userp);
+
+        /**
          * @brief Адрес SMTP-сервера
          * @note "gmail.com", "yandex.com" и т.д
          */
