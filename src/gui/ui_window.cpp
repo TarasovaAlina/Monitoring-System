@@ -46,9 +46,38 @@ namespace gui {
     }
 
     void UIWindow::setAgentNames(const QStringList& names) noexcept {
+        // Сохраняем имя агента, который сейчас выбран в выпадающем списке
+        QString currentSelectedName = combo_agentSelector->currentText();
+
+        // Собираем текущие элементы для сравнения
+        QStringList existingNames;
+        for (int i = 0; i < combo_agentSelector->count(); ++i) {
+            existingNames.append(combo_agentSelector->itemText(i));
+        }
+
+        // Если список агентов абсолютно не изменился — выходим,
+        // чтобы не сбрасывать фокус и выбор пользователя
+        if (existingNames == names) {
+            return;
+        }
+
+        // Блокируем сигналы на время изменения списка
         const QSignalBlocker blocker(combo_agentSelector);
         combo_agentSelector->clear();
         combo_agentSelector->addItems(names);
+
+        // 4. Пытаемся восстановить выбор пользователя по имени
+        int index = combo_agentSelector->findText(currentSelectedName);
+        if (index != -1) {
+            // Если ранее выбранный агент всё еще существует, возвращаем его выбор
+            combo_agentSelector->setCurrentIndex(index);
+        } else {
+            // Если выбранный агент исчез, выбираем первого доступного
+            combo_agentSelector->setCurrentIndex(0);
+            if (combo_agentSelector->count() > 0) {
+                emit agentSelected(0);
+            }
+        }
     }
 
     void UIWindow::setActiveAgentIndex(int index) noexcept {
