@@ -48,21 +48,23 @@ namespace core {
                 _logger->log(data);
 
                 // Сравниваем полученные данные с критическими значениями
-                for (auto metric_res : data) {
+                for (auto metric_result : data) {
                     // Находим запись об этой метрике
-                    auto metric_it = std::ranges::find_if(_metrics_list.begin(), _metrics_list.end(), [&metric_res](const auto& metric_ref) {
-                        return metric_res.name == metric_ref.target;
-                    });
+                    for (auto& metric_ref : _metrics_list) {
+                        if (metric_result.name == metric_ref.target) {
+                            auto operation = metric_ref.threshold.operation;
+                            auto crit_value = metric_ref.threshold.value;
 
-                    auto operation = metric_it->threshold.operation;
-                    auto crit_value = metric_it->threshold.value;
+                            if (operation == "<" && metric_result.value < crit_value ||
+                                operation == ">" && metric_result.value > crit_value ||
+                                operation == "<=" && metric_result.value <= crit_value ||
+                                operation == ">=" && metric_result.value >= crit_value ||
+                                operation == "==" && metric_result.value == crit_value) {
+                                tools::NotificationService::notify(metric_result.name, metric_result.value);
+                            }
 
-                    if (operation == "<" && metric_res.value < crit_value ||
-                        operation == ">" && metric_res.value > crit_value ||
-                        operation == "<=" && metric_res.value >= crit_value ||
-                        operation == ">=" && metric_res.value <= crit_value ||
-                        operation == "==" && metric_res.value >= crit_value) {
-                        tools::NotificationService::notify(metric_res.name, metric_res.value);
+                            break;
+                        }
                     }
                 }
 
