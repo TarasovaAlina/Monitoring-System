@@ -1,6 +1,7 @@
 #include "gui/main_window.h"
 #include "core/kernel.h"
 #include "tools/log_reader.h"
+#include "tools/notification_service.h"
 #include <QMessageBox>
 #include <QTimer>
 
@@ -27,6 +28,7 @@ namespace gui {
         connect(_ui, &UIWindow::agentSelected, this, &MainWindow::onAgentSelected);
         connect(_ui, &UIWindow::agentEnabledChanged, this, &MainWindow::onAgentEnabledChanged);
         connect(_ui, &UIWindow::applyRequested, this, &MainWindow::onApplyRequested);
+        connect(_ui, &UIWindow::emailDuplicationChanged, this, &MainWindow::onEmailDuplicationChanged);
 
         _ui->setActiveAgentIndex(0);
         pushCurrentAgentToUI();
@@ -56,16 +58,17 @@ namespace gui {
     }
 
     void MainWindow::reloadAgentList(const QStringList& agents) noexcept {
-        std::unique_lock<std::shared_mutex> lock(_agent_names_mutex);
+        _agent_names_mutex.lock();
         _agent_names = agents;
 
         if (_agent_names.isEmpty()) {
             _agent_names = { QStringLiteral("<Нет доступных агентов>") };
         }
+        _agent_names_mutex.unlock();
 
         _ui->setAgentNames(_agent_names);
 
-        if (!_is_initial_agent_loaded && !_agent_names.isEmpty() && _agent_names.first() != QStringLiteral("<Нет доступных агентов>")) {
+        if (!_is_initial_agent_loaded && _agent_names.first() != QStringLiteral("<Нет доступных агентов>")) {
             // После этого данный блок никогда не выполнится
             _is_initial_agent_loaded = true;
 
@@ -159,5 +162,9 @@ namespace gui {
         }
 
         qDebug() << "[MainWindow] Настройки применены к текущему агенту" << QString::fromStdString(curAgentName);
+    }
+
+    void MainWindow::onEmailDuplicationChanged(bool enabled) const noexcept {
+        tools::NotificationService::emailDuplication() = enabled;
     }
 }

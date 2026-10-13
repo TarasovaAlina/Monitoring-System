@@ -58,6 +58,12 @@ namespace gui {
             long timeout_ms) const noexcept;
 
         /**
+         * @brief Реакция на нажатие действия "Включить дублирование на email" в верхнем меню
+         * @param enabled Показывает, будут ли дублироваться уведомления или нет
+         */
+        void onEmailDuplicationChanged(bool enabled) const noexcept;
+
+        /**
          * @brief Обновляет вкладку с агентами, запрашивая у _kernel актуальный список агентов
          */
         void reloadAgentList(const QStringList& agents) noexcept;
