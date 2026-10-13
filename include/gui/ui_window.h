@@ -23,9 +23,7 @@ class QFrame;
 class QComboBox;
 class QLineEdit;
 class QSplitter;
-class QMenuBar;
-class QMenu;
-class QAction;
+class QToolButton;
 QT_END_NAMESPACE
 
 #define NUMBER_DISPLAY_ROWS 20 ///< Количество отображаемых строк на экране
@@ -156,9 +154,7 @@ namespace gui {
 
         // Элементы верхнего меню
         QVBoxLayout* layout_mainOuter; ///< Главный вертикальный макет
-        QMenuBar* menuBar_top; ///< Верхняя строка меню
-        QMenu* menu_notification; /// Меню "Оповещение"
-        QAction* action_emailDuplication; /// Галочка "Включить дублирование на email"
+        QToolButton* button_notificationMenu; ///< Кнопка с меню "Оповещение"
 
         QSplitter* splitter_main; ///< Разделитель между областями экрана
 

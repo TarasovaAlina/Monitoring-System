@@ -12,7 +12,8 @@
 #include <QSpinBox>
 #include <QComboBox>
 #include <QLineEdit>
-#include <QMenuBar>
+#include <QMenu>
+#include <QToolButton>
 #include <QSplitter>
 
 namespace gui {
@@ -22,8 +23,8 @@ namespace gui {
         layout_mainOuter->setSpacing(0);
 
         buildMenuPanel();
-        // Добавляем меню на самый верх окна
-        layout_mainOuter->addWidget(menuBar_top);
+        // Добавляем кнопку в верхнюю часть макета
+        layout_mainOuter->addWidget(button_notificationMenu, 0, Qt::AlignLeft); // Прижимаем к левому краю, по ширине текста
 
         // 3. Создаем сплиттер для основного содержимого (метрик и настроек)
         splitter_main = new QSplitter(Qt::Horizontal, this);
@@ -56,18 +57,23 @@ namespace gui {
     }
 
     void UIWindow::buildMenuPanel() noexcept {
-        menuBar_top = new QMenuBar(this);
+        // 2. Создаем кнопку с выпадающим меню "Оповещение" (ширина по размеру текста)
+        button_notificationMenu = new QToolButton(this);
+        button_notificationMenu->setText(QStringLiteral("Оповещение ▾"));
+        button_notificationMenu->setPopupMode(QToolButton::InstantPopup); // Открытие по клику
+        button_notificationMenu->setStyleSheet("QToolButton { padding: 4px 8px; }");
 
-        // Добавляем пункт меню "Оповещение"
-        menu_notification = menuBar_top->addMenu(QStringLiteral("Оповещение"));
-
-        // Добавляем пункт с галочкой (checkable action)
-        action_emailDuplication = menu_notification->addAction(QStringLiteral("Включить дублирование на email"));
+        // Создаем само выпадающее меню
+        QMenu* notificationMenu = new QMenu(this);
+        QAction* action_emailDuplication = notificationMenu->addAction(QStringLiteral("Включить дублирование на email"));
         action_emailDuplication->setCheckable(true);
-        action_emailDuplication->setChecked(false); // По умолчанию выключено
+        action_emailDuplication->setChecked(false);
 
-        // Связываем переключение галочки со знаком класса
+        // Связываем переключение галочки с сигналом класса
         connect(action_emailDuplication, &QAction::toggled, this, &UIWindow::onEmailDuplicationChanged);
+
+        // Привязываем меню к кнопке
+        button_notificationMenu->setMenu(notificationMenu);
     }
 
     void UIWindow::buildMetricsPanel() noexcept {
