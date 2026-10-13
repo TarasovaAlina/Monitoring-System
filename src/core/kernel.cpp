@@ -1,4 +1,5 @@
 #include "core/kernel.h"
+#include "tools/notification_service.h"
 
 namespace core {
     Kernel::Kernel() noexcept
@@ -65,6 +66,10 @@ namespace core {
 
     void Kernel::connectionAgent(const std::string &name) noexcept {
         _agent_service->getAgent(name)->setSleepMode(false);
+    }
+
+    void Kernel::enableNotificationsDuplication(bool is_enable) noexcept {
+        tools::NotificationService::emailDuplication() = is_enable;
     }
 
     bool Kernel::isCorrect() const noexcept {
