@@ -120,24 +120,10 @@ namespace core {
         void connectionAgent(const std::string& name) noexcept;
 
         /**
-         * @brief Отправляет сообщение на указанный email или в телеграме
-         * при достижении какой-то метрики критической отметки
-         * @param metric Название метрики
-         * @param value Значение этой метрики
-         */
-        void notifyUser(const std::string& metric, double value);
-
-        /**
          * @brief Возможность включать/выключать дублирование оповещений на указанный email адрес
          * @param is_enable Включено, если true, иначе выключено
          */
         void enableNotificationsDuplication(bool is_enable) noexcept;
-
-        /**
-         * @brief Установление нового email адреса, куда программа будет присылать предупреждения
-         * @param email Корректный email адрес
-         */
-        void setEmail(const std::string& email) noexcept;
 
         /**
          * @return true, если при создании ядра не произошло ошибок
