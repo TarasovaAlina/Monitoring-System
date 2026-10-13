@@ -12,22 +12,36 @@
 #include <QSpinBox>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QMenuBar>
+#include <QSplitter>
 
 namespace gui {
     UIWindow::UIWindow(QWidget* parent) noexcept : QWidget(parent) {
-        layout_rootLayout = new QHBoxLayout(this);
+        layout_mainOuter = new QVBoxLayout(this);
+        layout_mainOuter->setContentsMargins(0, 0, 0, 0);
+        layout_mainOuter->setSpacing(0);
 
-        // Левая колонка
-        layout_leftColumnLayout = new QVBoxLayout();
+        buildMenuPanel();
+        // Добавляем меню на самый верх окна
+        layout_mainOuter->addWidget(menuBar_top);
 
+        // 3. Создаем сплиттер для основного содержимого (метрик и настроек)
+        splitter_main = new QSplitter(Qt::Horizontal, this);
+
+        // Создаем левую и правую панели
         buildMetricsPanel();
-        layout_leftColumnLayout->addWidget(box_metricsPanelGroup, 1);
-
-        layout_rootLayout->addLayout(layout_leftColumnLayout, 4);
-
-        // Правая колонка
         buildSettingsPanel();
-        layout_rootLayout->addWidget(box_settingsGroup, 1);
+
+        // Добавляем их в Splitter
+        splitter_main->addWidget(box_metricsPanelGroup);
+        splitter_main->addWidget(box_settingsGroup);
+
+        // Настраиваем пропорции по умолчанию
+        splitter_main->setStretchFactor(0, 1);
+        splitter_main->setStretchFactor(1, 1);
+
+        // Добавляем сплиттер под меню в главный вертикальный макет
+        layout_mainOuter->addWidget(splitter_main);
     }
 
     void UIWindow::setAgentNames(const QStringList& names) noexcept {
@@ -41,8 +55,23 @@ namespace gui {
         combo_agentSelector->setCurrentIndex(index);
     }
 
+    void UIWindow::buildMenuPanel() noexcept {
+        menuBar_top = new QMenuBar(this);
+
+        // Добавляем пункт меню "Оповещение"
+        menu_notification = menuBar_top->addMenu(QStringLiteral("Оповещение"));
+
+        // Добавляем пункт с галочкой (checkable action)
+        action_emailDuplication = menu_notification->addAction(QStringLiteral("Включить дублирование на email"));
+        action_emailDuplication->setCheckable(true);
+        action_emailDuplication->setChecked(false); // По умолчанию выключено
+
+        // Связываем переключение галочки со знаком класса
+        connect(action_emailDuplication, &QAction::toggled, this, &UIWindow::onEmailDuplicationChanged);
+    }
+
     void UIWindow::buildMetricsPanel() noexcept {
-        box_metricsPanelGroup = new QGroupBox(QStringLiteral("Вывод метрик на экран"), this);
+        box_metricsPanelGroup = new QGroupBox(this);
 
         layout_metricsLayout = new QVBoxLayout(box_metricsPanelGroup);
         layout_metricsLayout->setAlignment(Qt::AlignTop);
@@ -60,7 +89,7 @@ namespace gui {
     }
 
     void UIWindow::buildSettingsPanel() noexcept {
-        box_settingsGroup = new QGroupBox(QStringLiteral("Настройка агента"), this);
+        box_settingsGroup = new QGroupBox(this);
         layout_outerLayout = new QVBoxLayout(box_settingsGroup);
 
         // Выпадающий список выбора текущего агента
@@ -105,7 +134,7 @@ namespace gui {
         // Таймаут обновления
         detailsLayout->addWidget(new QLabel(QStringLiteral("Таймаут обновления (мс):")));
         box_intervalSpin = new QSpinBox(widget_settingsDetails);
-        box_intervalSpin->setRange(100, 60000);
+        box_intervalSpin->setRange(1, 600000);
         box_intervalSpin->setSingleStep(100);
         detailsLayout->addWidget(box_intervalSpin);
 
@@ -251,6 +280,10 @@ namespace gui {
         }
     }
 
+    void UIWindow::onEmailDuplicationChanged(bool enabled) {
+        emit emailDuplicationChanged(enabled);
+    }
+
     void UIWindow::showAgentSettings(const QString& name, const core::AgentInfo& info) noexcept {
         // Блокируем сигналы, чтобы при установке значения из кода не отправлялся повторный сигнал
         const QSignalBlocker b1(box_enabledCheck);
@@ -291,9 +324,6 @@ namespace gui {
         for (const auto& metric : info.critical_metrics) {
             const QString metricName = QString::fromStdString(metric.target);
 
-            // ПРИМЕЧАНИЕ: скорректируйте обращения к полям ниже (condition / critical_value),
-            // если в вашей структуре core::MetricConfig они называются иначе
-            // (например, metric.threshold.condition или metric.criticalValue)
             const QString condition = QString::fromStdString(metric.threshold.operation);
             const double criticalValue = metric.threshold.value;
 

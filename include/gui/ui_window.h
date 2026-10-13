@@ -23,6 +23,9 @@ class QFrame;
 class QComboBox;
 class QLineEdit;
 class QSplitter;
+class QMenuBar;
+class QMenu;
+class QAction;
 QT_END_NAMESPACE
 
 #define NUMBER_DISPLAY_ROWS 20 ///< Количество отображаемых строк на экране
@@ -98,6 +101,12 @@ namespace gui {
          */
         void applyRequested(const QString& agent_name, int index, const QList<core::MetricConfig>& metrics, long timeout_ms) const;
 
+        /**
+         * @brief Оповещает класс MainWindow, что была нажат чекбокс в верхней части меню
+         * @param enabled Активен ли этот чекбокс
+         */
+        void emailDuplicationChanged(bool enabled);
+
     private slots:
         /**
          * @brief Обработчик сигнала нажатия на кнопку "Применить" на панели справа.
@@ -111,6 +120,12 @@ namespace gui {
          */
         void onAgentSelectorChanged(int index) noexcept;
 
+        /**
+         * @brief Обрабатывает переключение действия "Включить дублирование на email" в верхнем меню
+         * @param enabled Активно ли данное состояние или нет
+         */
+        void onEmailDuplicationChanged(bool enabled);
+
     private:
         /**
          * @brief Обработчик нажатия на кнопку "+".
@@ -118,6 +133,7 @@ namespace gui {
          */
         void addMetricSettingRow(const QString& name = "", const QString& condition = ">", double value = 0.0) noexcept;
 
+        void buildMenuPanel() noexcept; ///< Конструирует верхнее меню с выбором "Оповещение"
         void buildMetricsPanel() noexcept; ///< Конструирует панель слева, которая служит для вывода собранных метрик
         void buildSettingsPanel() noexcept; ///< Конструирует панель справа, которая служит для отображения настроек агентов
 
@@ -137,6 +153,12 @@ namespace gui {
             QComboBox* conditionCombo; ///< Выпадающий список с возможными условиями достижения крит.значения (<, >, ==, !=, <=, >=)
             QDoubleSpinBox* valueSpin; ///< Спинбокс для изменения значения критического значения
         };
+
+        // Элементы верхнего меню
+        QVBoxLayout* layout_mainOuter; ///< Главный вертикальный макет
+        QMenuBar* menuBar_top; ///< Верхняя строка меню
+        QMenu* menu_notification; /// Меню "Оповещение"
+        QAction* action_emailDuplication; /// Галочка "Включить дублирование на email"
 
         QSplitter* splitter_main; ///< Разделитель между областями экрана
 
