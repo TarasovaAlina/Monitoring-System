@@ -23,23 +23,29 @@ namespace agent {
                 std::string disk_name = dir_entry.path().filename().string(); // Название устройства (чтобы не было ram и loop)
                 totalBytes += _getDiskSize(disk_name);
 
-                std::pair<unsigned long, unsigned long> io_sectors1 = _readIOSectorsStat(disk_name);
-                std::pair<unsigned long, unsigned long> io_operation1 = _readIOOperationsStat(disk_name);
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                std::pair<unsigned long, unsigned long> io_sectors2 = _readIOSectorsStat(disk_name);
-                std::pair<unsigned long, unsigned long> io_operation2 = _readIOOperationsStat(disk_name);
+                std::pair<unsigned long, unsigned long> io_sectors = _readIOSectorsStat(disk_name);
+                std::pair<unsigned long, unsigned long> io_operations = _readIOOperationsStat(disk_name);
 
-                det_reads += io_sectors2.first - io_sectors1.first;
-                det_writes += io_sectors2.second - io_sectors1.second;
+                if (_io_sectors_stat.contains(disk_name)) {
+                    det_sectors_read += io_sectors.first - _io_sectors_stat[disk_name].first;
+                    det_sectors_write += io_sectors.second - _io_sectors_stat[disk_name].second;
 
-                det_sectors_read += io_operation2.first - io_operation1.first;
-                det_sectors_write += io_operation2.second - io_operation1.second;
+                    det_reads += io_operations.first - _io_operations_stat[disk_name].first;
+                    det_writes += io_operations.second - _io_operations_stat[disk_name].second;
+                }
+
+                _io_sectors_stat[disk_name] = io_sectors;
+                _io_operations_stat[disk_name] = io_operations;
             }
         }
 
+        auto cur_point = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration<double>(cur_point - _last_point).count();
         auto hard_volume = totalBytes;
-        auto hard_ops = (det_reads + det_writes) * 10;
-        auto hard_throughput = (det_sectors_read + det_sectors_write) * 512 * 10;
+        auto hard_ops = (det_reads + det_writes) / elapsed;
+        auto hard_throughput = (det_sectors_read + det_sectors_write) * 512 / elapsed;
+
+        _last_point = cur_point;
 
         std::vector<Metric> result_metrics;
         result_metrics.reserve(metric_names_list.size());

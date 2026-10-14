@@ -8,6 +8,7 @@
  * @author Kovalev Georgiy
  */
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <map>
@@ -66,6 +67,8 @@ namespace agent {
          * @return Количество процессов в системе
          */
         static int _readCountProcesses() noexcept;
+
+        std::pair<unsigned long long, unsigned long long> _cpu_stat; ///< Последнее состояние загрузки процессора
     };
 
     /**
@@ -126,6 +129,10 @@ namespace agent {
          * @param disk_name Путь до диска в формате @code/dev/имя_диска@endcode
          */
         static unsigned long long _getDiskSize(const std::string& disk_name) noexcept;
+
+        std::map<std::string, std::pair<unsigned long long, unsigned long long>> _io_sectors_stat; ///< Последнее состояние I/O секторов памяти
+        std::map<std::string, std::pair<unsigned long long, unsigned long long>> _io_operations_stat; ///< Последнее состояние операций I/O
+        std::chrono::steady_clock::time_point _last_point; ///< Временная точка, когда был произведен последний замер
     };
 
     /**
@@ -165,6 +172,10 @@ namespace agent {
          * @return Пара <считанные_байты; отправленные_байты> для каждого сетевого интерфейса, доступного в системе
          */
         static std::map<std::string, std::pair<unsigned long, unsigned long>> _readNetInterfaces() noexcept;
+
+        std::map<std::string, std::pair<unsigned long, unsigned long>> _net_stat; ///< Последняя собранная статистика по каждому интерфейсу
+        std::chrono::steady_clock::time_point _last_point;
+
     };
 }
 

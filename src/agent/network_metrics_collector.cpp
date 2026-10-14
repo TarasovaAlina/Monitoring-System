@@ -12,23 +12,24 @@ namespace agent {
         for (const auto& name : metric_names_list) {
             if (name == "inet_throughput") {
                 // Считываем данные два раза
-                auto result_before = _readNetInterfaces();
-                std::this_thread::sleep_for(std::chrono::milliseconds(300));
-                auto result_after = _readNetInterfaces();
+                auto result_inet = _readNetInterfaces();
+                auto cur_point = std::chrono::steady_clock::now();
+                auto elapsed = std::chrono::duration<double>(cur_point - _last_point).count();
 
-                double throughputs = 0.0;
+                double throughput = 0.0;
                 int count = 0;
-                for (const auto& [interface, count_bytes]: result_after) {
-                    if (result_before.contains(interface)) {
-                        auto det_receive_bytes = count_bytes.first - result_before[interface].first;
-                        auto det_transmit_bytes = count_bytes.second - result_before[interface].first;
+                for (const auto& [interface, count_bytes]: result_inet) {
+                    if (_net_stat.contains(interface)) {
+                        auto det_receive_bytes = count_bytes.first - _net_stat[interface].first;
+                        auto det_transmit_bytes = count_bytes.second - _net_stat[interface].first;
 
-                        throughputs += static_cast<double>(det_receive_bytes + det_transmit_bytes) * 0.33;
+                        throughput += static_cast<double>(det_receive_bytes + det_transmit_bytes) / elapsed;
                         count++;
                     }
                 }
 
-                result.emplace_back(Metric("inet_throughput", throughputs / count));
+                result.emplace_back(Metric("inet_throughput", throughput / count));
+                _net_stat = result_inet;
             }
 
             else {

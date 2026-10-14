@@ -11,12 +11,13 @@ namespace agent {
 
         for (const auto& name : metric_names_list) {
             if (name == "cpu") {
-                auto stat1 = _readCPUStats();
-                std::this_thread::sleep_for(std::chrono::microseconds(500));
-                auto stat2 = _readCPUStats();
+                auto now_stat = _readCPUStats();
 
-                double cpu = 1.0 - static_cast<double>(stat2.first - stat1.first) / (stat2.second - stat1.second);
+                auto total = static_cast<double>(now_stat.second - _cpu_stat.second);
+                double cpu = (total) ? 1.0 - static_cast<double>(now_stat.first - _cpu_stat.first) / total : 0.0;
                 metrics.emplace_back(Metric{name, cpu});
+
+                _cpu_stat = now_stat;
             }
 
             else if (name == "processes") {
