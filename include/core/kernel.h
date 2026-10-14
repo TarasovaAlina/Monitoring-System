@@ -2,7 +2,6 @@
 #define SYSTEM_MONITORING_KERNEL_H
 
 #include "agent_service.h"
-#include "tools/logger.h"
 #include "config_service.h"
 #include <memory>
 #include <thread>
@@ -51,7 +50,6 @@ namespace core {
      * - Отключение/включение выбранного агента
      * - Уведомление пользователя, если значения достигли критических значений
      * - Включение/выключение дублирования оповещения на указанный email
-     * - Менять email пользователя
      *
      */
     class Kernel {

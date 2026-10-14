@@ -60,8 +60,8 @@ namespace agent {
         std::unique_ptr<IMetricsCollector> _metrics_collector; ///< Сборщик метрик, который имплементирует в себе логику получения данных
     };
 
-    typedef IAgent* (*CreateAgentFunc)(AgentType);
-    typedef void (*DestroyAgentFunc)(IAgent*);
+    typedef IAgent* (*CreateAgentFunc)(AgentType); ///< Фабрика для создания агента из динамической библиотеки
+    typedef void (*DestroyAgentFunc)(IAgent*); ///< Фабрика для удаления загруженного агента
 }
 
 #endif

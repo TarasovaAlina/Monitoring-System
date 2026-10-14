@@ -31,8 +31,8 @@ namespace tools {
         static void notify(std::string metric_name, double value) noexcept;
 
     private:
-        static TelegramChannel _telegram_channel;
-        static EmailChannel _email_channel;
+        static TelegramChannel _telegram_channel; ///< Отвечает за отправку сообщения через Telegram бот
+        static EmailChannel _email_channel; ///< Отвечает за отправку сообщения через email
         static bool _is_enable_duplication; ///< Разрешено ли дублирование сообщения на email-адрес
     };
 

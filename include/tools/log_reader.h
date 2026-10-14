@@ -1,5 +1,6 @@
 #ifndef SYSTEM_MONITORING_LOG_READER_H
 #define SYSTEM_MONITORING_LOG_READER_H
+
 #include "agent/metrics_collector.h"
 
 /**

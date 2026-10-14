@@ -86,19 +86,22 @@ namespace agent {
          * Таким образом, ram_total равен MemTotal, а значение ram рассчитывается как
          * @code 1 - (MemTotal - MemAvailable) @endcode
          *
-         * Для получения объема диска используется библиотека statvfs
+         * Для получения объема диска считывается значение из файла @code/sys/block/<dev>/size@endcode
          *
-         * Для получения статистики I/O использования жесткого диска считываются данные из файла @code/sys/block/<dev>/stat@endcode:
+         * Для получения пропускной способности диска считываются данные из файла @code/sys/block/<dev>/stat@endcode:
          * - Поле 3: количество прочитанных секторов
          * - Поле 7: количество записанных секторов
          *
+         * Для получения количества операций I/O диска считывается парсится тот же самый файл @code/sys/block/<dev>/stat@endcode:
+         * - Поле 1: Завершённые операции чтения
+         * - Поле 5: Завершённые операции записи
+         *
          * @note Размер одного сектора 512 байт, независимо от диска
          *
-         * Эти данные считываются дважды через определенный промежуток времени, после чего вычисляется IOPS:
-         * @code hard_ops = (det_read + det_write) / det_time @endcode
+         * Данные считываются и сохраняются, чтобы в следующий раз сравнить их с новыми и вычислить значение, как:
+         * - @code throughput = det(sectors) * 512 / det(t)@endcode
+         * - @code IOps = det(read_ops) + det(write_ops) / det(t)@endcode
          *
-         * В свою очередь, пропускная способность связана с IOPS через размер блока:
-         * @code hard_throughput = hard_ops * block_size @endcode
          * @param metric_names_list Список метрик, которые сборщик должен считать
          */
         std::vector<Metric> update(const std::vector<std::string>& metric_names_list) noexcept override;
@@ -174,7 +177,7 @@ namespace agent {
         static std::map<std::string, std::pair<unsigned long, unsigned long>> _readNetInterfaces() noexcept;
 
         std::map<std::string, std::pair<unsigned long, unsigned long>> _net_stat; ///< Последняя собранная статистика по каждому интерфейсу
-        std::chrono::steady_clock::time_point _last_point;
+        std::chrono::steady_clock::time_point _last_point; ///< Временная точка, когда был произведен последний замер
 
     };
 }

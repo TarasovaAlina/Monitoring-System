@@ -12,6 +12,10 @@
 #include <QThread>
 #include <memory>
 
+/**
+ * @namespace gui
+ * @brief В этом пространстве имен описаны классы, которые отвечают за UX/UI
+ */
 namespace gui {
     /**
      * @class MainWindow
