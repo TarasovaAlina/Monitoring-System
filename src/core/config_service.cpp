@@ -138,7 +138,7 @@ namespace core {
     }
 
     const AgentType ConfigService::_getAgentTypeFromStr(const std::string& agentType) const noexcept {
-        AgentType agentTypeRes{};
+        AgentType agentTypeRes = agent::CPU_AGENT;
 
         if (agentType == "CPU_AGENT")
             agentTypeRes = agent::CPU_AGENT;
@@ -151,14 +151,16 @@ namespace core {
     }
 
     const std::string ConfigService::_setAgentTypeToStr(const AgentType &type) const noexcept {
-        switch(type) {
-            case agent::CPU_AGENT:
-                return "CPU_AGENT";
-            case agent::MEMORY_AGENT:
-                return "MEMORY_AGENT";
-            case agent::NETWORK_AGENT:
-                return "NETWORK_AGENT";
-        }
+        std::string agentType_str;
+
+        if (type == agent::MEMORY_AGENT)
+            agentType_str = "MEMORY_AGENT";
+        else if (type == agent::NETWORK_AGENT)
+            agentType_str = "NETWORK_AGENT";
+        else
+            agentType_str = "CPU_AGENT";
+
+        return agentType_str;
     }
 
 }
