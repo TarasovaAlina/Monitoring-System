@@ -3,7 +3,6 @@
 #include <sstream>
 #include <filesystem>
 #include <thread>
-#include <sys/statvfs.h>
 
 namespace agent {
     std::vector<Metric> MemoryMetricsCollector::update(const std::vector<std::string>& metric_names_list) noexcept {
@@ -11,34 +10,36 @@ namespace agent {
 
         // Сохраняем статистику использования ОЗУ
         auto ram_total = static_cast<double>(ram_metrics.second);
-        auto ram = 1.0 - static_cast<double>(ram_metrics.first) / ram_total;
+        auto ram = ram_total - ram_metrics.first;
 
-        unsigned long long totalBytes = 0, freeBytes = 0;
+        unsigned long long totalBytes = 0;
         int det_reads = 0, det_writes = 0;
+        int det_sectors_read = 0, det_sectors_write = 0;
+
         for (const auto& dir_entry: std::filesystem::directory_iterator("/sys/block")) {
             if (dir_entry.path().filename().string().find("ram") == std::string::npos &&
                 dir_entry.path().filename().string().find("loop") == std::string::npos) {
 
                 std::string disk_name = dir_entry.path().filename().string(); // Название устройства (чтобы не было ram и loop)
+                totalBytes += _getDiskSize(disk_name);
 
-                struct statvfs stat;
-                if (statvfs(("/dev/" + disk_name).c_str(), &stat) == 0) {
-                    totalBytes += stat.f_blocks * stat.f_frsize;
-                    freeBytes += stat.f_bavail * stat.f_frsize;
-                }
-
-                std::pair<unsigned long, unsigned long> disk_metrics1 = _readPartitionDiskStat(disk_name);
+                std::pair<unsigned long, unsigned long> io_sectors1 = _readIOSectorsStat(disk_name);
+                std::pair<unsigned long, unsigned long> io_operation1 = _readIOOperationsStat(disk_name);
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                std::pair<unsigned long, unsigned long> disk_metrics2 = _readPartitionDiskStat(disk_name);
+                std::pair<unsigned long, unsigned long> io_sectors2 = _readIOSectorsStat(disk_name);
+                std::pair<unsigned long, unsigned long> io_operation2 = _readIOOperationsStat(disk_name);
 
-                det_reads += disk_metrics1.first - disk_metrics1.first;
-                det_writes += disk_metrics2.second - disk_metrics1.second;
+                det_reads += io_sectors2.first - io_sectors1.first;
+                det_writes += io_sectors2.second - io_sectors1.second;
+
+                det_sectors_read += io_operation2.first - io_operation1.first;
+                det_sectors_write += io_operation2.second - io_operation1.second;
             }
         }
 
-        auto hard_volume = totalBytes - freeBytes;
+        auto hard_volume = totalBytes;
         auto hard_ops = (det_reads + det_writes) * 10;
-        auto hard_throughput = hard_ops * 512;
+        auto hard_throughput = (det_sectors_read + det_sectors_write) * 512 * 10;
 
         std::vector<Metric> result_metrics;
         result_metrics.reserve(metric_names_list.size());
@@ -66,7 +67,7 @@ namespace agent {
         return result_metrics;
     }
 
-    std::pair<unsigned long, unsigned long> MemoryMetricsCollector::_readPartitionDiskStat(const std::string &disk_name) noexcept {
+    std::pair<unsigned long, unsigned long> MemoryMetricsCollector::_readIOSectorsStat(const std::string &disk_name) noexcept {
         unsigned long sectors_read, sectors_write;
         std::ifstream file("/sys/block/" + disk_name + "/stat");
 
@@ -74,6 +75,16 @@ namespace agent {
         file >> sectors_write >> sectors_write >> sectors_write >> sectors_write; // Считываем 7-е поле
 
         return {sectors_read, sectors_write};
+    }
+
+    std::pair<unsigned long, unsigned long> MemoryMetricsCollector::_readIOOperationsStat(const std::string &disk_name) noexcept {
+        unsigned long operations_read, operations_write;
+        std::ifstream file("/sys/block/" + disk_name + "/stat");
+
+        file >> operations_read; // Считываем 1-е поле
+        file >> operations_write >> operations_write >> operations_write >> operations_write; // Считываем 5-е поле
+
+        return {operations_read, operations_write};
     }
 
     std::pair<unsigned long, unsigned long> MemoryMetricsCollector::_readRAMStat() noexcept {
@@ -98,4 +109,17 @@ namespace agent {
 
         return {available, total};
     }
+
+    unsigned long long MemoryMetricsCollector::_getDiskSize(const std::string &disk_name) noexcept {
+        std::ifstream file("/sys/block/" + disk_name + "/size");
+
+        uint64_t sectors = 0;
+
+        if (!(file >> sectors)) {
+            return 0;
+        }
+
+        return sectors * 512ULL;
+    }
+
 }

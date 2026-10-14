@@ -108,10 +108,24 @@ namespace agent {
         static std::pair<unsigned long, unsigned long> _readRAMStat() noexcept;
 
         /**
-         * @brief Парсит из файла @code/sys/block/<dev>/stat@endcode
+         * @brief Парсит из файла @code/sys/block/<dev>/stat@endcode 3-е и 7-е поля
+         * @param disk_name Имя дискового устройства
          * @return Пара значений {sectors_read, sectors_write}
          */
-        static std::pair<unsigned long, unsigned long> _readPartitionDiskStat(const std::string& disk_name) noexcept;
+        static std::pair<unsigned long, unsigned long> _readIOSectorsStat(const std::string& disk_name) noexcept;
+
+        /**
+         * @brief Парсит из файла @code/sys/block/<dev>/stat@endcode 1-е и 5-е поля
+         * @param disk_name Имя дискового устройства
+         * @return Пара значений {operations_read, operations_write}
+         */
+        static std::pair<unsigned long, unsigned long> _readIOOperationsStat(const std::string& disk_name) noexcept;
+
+        /**
+         * @brief Определяет объем дискового устройства
+         * @param disk_name Путь до диска в формате @code/dev/имя_диска@endcode
+         */
+        static unsigned long long _getDiskSize(const std::string& disk_name) noexcept;
     };
 
     /**
