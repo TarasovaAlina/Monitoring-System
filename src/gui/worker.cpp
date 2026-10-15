@@ -14,7 +14,6 @@ namespace gui {
         if (_log_reader->isUpdated()) {
             auto data = _log_reader->readData();
 
-            qDebug() << "[Worker] Прочитаны последние данные из файла логов";
             emit updateMetricsList(data.second);
         }
     }

@@ -20,8 +20,6 @@ namespace gui {
             names.append(QString::fromStdString(name));
         }
 
-        qDebug() << "[AgentPoller] Получен список имен агентов от Kernel";
-
         // Отправляем готовый список в главный поток
         emit agentsListFetched(names);
     }

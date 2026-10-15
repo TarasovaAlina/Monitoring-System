@@ -24,6 +24,7 @@ namespace gui {
 
         _ui = new UIWindow(this);
         setCentralWidget(_ui);
+        qDebug() << "[MainWindow] Создано окно приложения";
 
         connect(_ui, &UIWindow::agentSelected, this, &MainWindow::onAgentSelected);
         connect(_ui, &UIWindow::agentEnabledChanged, this, &MainWindow::onAgentEnabledChanged);
@@ -77,8 +78,6 @@ namespace gui {
 
             pushCurrentAgentToUI();
         }
-
-        qDebug() << "[MainWindow] Обновлен список агентов в UI";
     }
 
     void MainWindow::updatingLogs(const std::vector<agent::Metric> &metrics_list) noexcept {
@@ -89,8 +88,6 @@ namespace gui {
         }
 
         _ui->showMetrics(_metrics_list);
-
-        qDebug() << "[MainWindow] Отображены новые метрики в левой панели";
     }
 
     QString MainWindow::currentAgentName() const noexcept {
@@ -106,7 +103,7 @@ namespace gui {
             return;
 
         _currentAgentIndex = index;
-        qDebug() << "[MainWindow] Выбран агент index = " << index;
+        qDebug() << "[MainWindow] Выбран агент " << currentAgentName();
         pushCurrentAgentToUI();
     }
 
